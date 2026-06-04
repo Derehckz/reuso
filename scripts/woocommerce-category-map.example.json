@@ -1,0 +1,9 @@
+{
+  "_comment": "Opcional. Solo overrides si el mapeo automático falla. Clave = slug WooCommerce, valor = slug subcategoría reuso (ver src/lib/constants/category-subcategories.ts).",
+  "default": "mujer-poleras",
+  "bolsos": "mujer-carteras",
+  "mochilas": "mujer-carteras",
+  "best-sellers": "mujer-chaquetas",
+  "zapatillas-mujer": "mujer-zapatillas",
+  "zapatillas-hombre": "hombre-zapatillas"
+}

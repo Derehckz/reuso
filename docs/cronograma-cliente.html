@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Cronograma reuso — DPCoding</title>
+  <style>
+    /* Paleta DPCoding — https://www.dpcoding.cl */
+    :root {
+      --dpc-bg: #07070f;
+      --dpc-surface: #0e0e24;
+      --dpc-surface2: #131328;
+      --dpc-violet: #8b5cf6;
+      --dpc-indigo: #6366f1;
+      --dpc-sky: #0ea5e9;
+      --dpc-cyan: #06b6d4;
+      --dpc-text: #f0f0f5;
+      --dpc-muted: #6b7280;
+      --dpc-gradient: linear-gradient(135deg, #7c3aed 0%, #6366f1 50%, #0ea5e9 100%);
+    }
+
+    @page {
+      size: A4;
+      margin: 16mm 14mm;
+    }
+
+    @page cover {
+      margin: 0;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: "Segoe UI", Inter, system-ui, sans-serif;
+      font-size: 11pt;
+      line-height: 1.5;
+      color: #1a1a2e;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* —— Portada —— */
+    .page-cover {
+      page: cover;
+      page-break-after: always;
+      min-height: 297mm;
+      width: 100%;
+      background: var(--dpc-bg);
+      color: var(--dpc-text);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 22mm 18mm;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-cover::before {
+      content: "";
+      position: absolute;
+      top: -20%;
+      right: -15%;
+      width: 70%;
+      height: 70%;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.25) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .cover-brand {
+      font-size: 11pt;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--dpc-violet);
+    }
+
+    .cover-brand span {
+      background: var(--dpc-gradient);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .cover-main { position: relative; z-index: 1; margin-top: 18mm; }
+
+    .cover-main h1 {
+      font-size: 32pt;
+      font-weight: 700;
+      line-height: 1.15;
+      margin: 0 0 12px;
+      background: linear-gradient(90deg, #a87aff, #818cf8, #38bdf8);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .cover-main .project {
+      font-size: 18pt;
+      font-weight: 600;
+      color: var(--dpc-text);
+      margin: 0 0 8px;
+    }
+
+    .cover-main .tagline {
+      font-size: 12pt;
+      color: var(--dpc-muted);
+      max-width: 85%;
+    }
+
+    .cover-meta {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: auto;
+      padding-top: 16mm;
+      border-top: 1px solid rgba(139, 92, 246, 0.35);
+    }
+
+    .cover-meta div {
+      font-size: 10pt;
+    }
+
+    .cover-meta strong {
+      display: block;
+      color: var(--dpc-sky);
+      font-size: 9pt;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .cover-footer-note {
+      font-size: 9pt;
+      color: var(--dpc-muted);
+      margin-top: 10mm;
+    }
+
+    /* —— Páginas interiores —— */
+    .page {
+      padding: 0 2mm;
+      page-break-after: always;
+    }
+
+    .page:last-child { page-break-after: auto; }
+
+    .doc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--dpc-indigo);
+      padding-bottom: 8px;
+      margin-bottom: 18px;
+    }
+
+    .doc-header .logo-text {
+      font-weight: 700;
+      font-size: 10pt;
+      letter-spacing: 0.06em;
+      color: var(--dpc-indigo);
+    }
+
+    .doc-header .doc-type {
+      font-size: 9pt;
+      color: var(--dpc-muted);
+    }
+
+    h2 {
+      font-size: 14pt;
+      color: var(--dpc-indigo);
+      border-left: 4px solid var(--dpc-violet);
+      padding-left: 10px;
+      margin: 22px 0 12px;
+    }
+
+    h3 {
+      font-size: 11pt;
+      color: #334155;
+      margin: 14px 0 8px;
+    }
+
+    .summary-box {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(14, 165, 233, 0.06));
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 14px 0;
+    }
+
+    .summary-box table { width: 100%; border-collapse: collapse; }
+    .summary-box th {
+      text-align: left;
+      font-weight: 600;
+      color: var(--dpc-indigo);
+      padding: 5px 12px 5px 0;
+      width: 42%;
+    }
+    .summary-box td { padding: 5px 0; }
+
+    table.data {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0;
+      font-size: 10pt;
+    }
+
+    table.data th,
+    table.data td {
+      border: 1px solid #e2e8f0;
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    table.data th {
+      background: var(--dpc-surface2);
+      color: var(--dpc-text);
+      background: linear-gradient(180deg, #6366f1, #4f46e5);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    table.data tr:nth-child(even) td { background: #f8fafc; }
+
+    .done { color: #059669; font-weight: 600; }
+    .pending { color: #d97706; font-weight: 600; }
+
+    .milestone {
+      background: var(--dpc-gradient);
+      color: #fff;
+      padding: 12px 16px;
+      border-radius: 8px;
+      text-align: center;
+      font-weight: 700;
+      margin: 16px 0;
+      font-size: 12pt;
+    }
+
+    .timeline {
+      font-family: ui-monospace, "Cascadia Code", monospace;
+      font-size: 9pt;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-left: 4px solid var(--dpc-violet);
+      padding: 14px;
+      line-height: 1.65;
+      white-space: pre;
+    }
+
+    .warn {
+      background: #fffbeb;
+      border-left: 4px solid var(--dpc-cyan);
+      padding: 10px 12px;
+      margin: 12px 0;
+      font-size: 10pt;
+    }
+
+    .index-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .index-list li {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 10px 0;
+      border-bottom: 1px dotted #cbd5e1;
+    }
+
+    .index-list a {
+      color: var(--dpc-indigo);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .index-list .idx-num {
+      color: var(--dpc-violet);
+      font-weight: 700;
+      margin-right: 10px;
+      min-width: 1.5em;
+    }
+
+    ul { margin: 8px 0; padding-left: 20px; }
+    li { margin: 5px 0; }
+
+    .conclusion-box {
+      background: var(--dpc-surface);
+      color: var(--dpc-text);
+      border-radius: 10px;
+      padding: 20px 22px;
+      margin: 16px 0;
+      border: 1px solid rgba(139, 92, 246, 0.4);
+    }
+
+    .conclusion-box h2 {
+      color: #a87aff;
+      border: none;
+      padding: 0;
+      margin-top: 0;
+    }
+
+    .conclusion-box p { color: #cbd5e1; }
+
+    .page-footer {
+      margin-top: 24px;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 9pt;
+      color: #64748b;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    @media print {
+      .page-cover { min-height: 100vh; }
+      h2, h3 { page-break-after: avoid; }
+      table.data { page-break-inside: avoid; }
+      a { color: inherit; text-decoration: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PORTADA -->
+  <section class="page-cover">
+    <div>
+      <p class="cover-brand"><span>DPCoding</span> · Soluciones digitales</p>
+    </div>
+    <div class="cover-main">
+      <p class="project">Proyecto reuso</p>
+      <h1>Cronograma de entrega</h1>
+      <p class="tagline">
+        Tienda online y panel de administración — plan de trabajo, avances y fecha de apertura al público.
+      </p>
+    </div>
+    <div>
+      <div class="cover-meta">
+        <div>
+          <strong>Inicio del proyecto</strong>
+          15 de mayo de 2026
+        </div>
+        <div>
+          <strong>Entrega en producción</strong>
+          19 de junio de 2026
+        </div>
+        <div>
+          <strong>Informe elaborado</strong>
+          2 de junio de 2026
+        </div>
+        <div>
+          <strong>Desarrollo</strong>
+          DPCoding · dpcoding.cl
+        </div>
+      </div>
+      <p class="cover-footer-note">Documento confidencial para el cliente reuso</p>
+    </div>
+  </section>
+
+  <!-- ÍNDICE -->
+  <section class="page" id="indice">
+    <div class="doc-header">
+      <span class="logo-text">DPCoding</span>
+      <span class="doc-type">Cronograma reuso · Índice</span>
+    </div>
+    <h2>Índice</h2>
+    <ol class="index-list">
+      <li><span><span class="idx-num">1.</span> Resumen ejecutivo</span></li>
+      <li><span><span class="idx-num">2.</span> ¿Qué significa producción el 19 de junio?</span></li>
+      <li><span><span class="idx-num">3.</span> Lo que ya está listo</span></li>
+      <li><span><span class="idx-num">4.</span> Plan hasta el 19 de junio</span></li>
+      <li><span><span class="idx-num">5.</span> Calendario visual</span></li>
+      <li><span><span class="idx-num">6.</span> Qué necesitamos de reuso</span></li>
+      <li><span><span class="idx-num">7.</span> Próximo hito y conclusión</span></li>
+    </ol>
+    <div class="page-footer">
+      <span>reuso ecommerce</span>
+      <span>Índice</span>
+    </div>
+  </section>
+
+  <!-- CONTENIDO -->
+  <section class="page">
+    <div class="doc-header">
+      <span class="logo-text">DPCoding</span>
+      <span class="doc-type">Cronograma reuso</span>
+    </div>
+
+    <h2>1. Resumen ejecutivo</h2>
+    <div class="summary-box">
+      <table>
+        <tr><th>Entrega en producción</th><td><strong>19 de junio de 2026</strong></td></tr>
+        <tr><th>Avance estimado</th><td>70–75 %</td></tr>
+        <tr><th>Días restantes</th><td>17 (del 3 al 19 de junio)</td></tr>
+        <tr><th>Catálogo de productos</th><td class="done">Migrado y cargado en el sistema</td></tr>
+        <tr><th>Mercado Pago</th><td class="pending">Pendiente de prueba con cobro real</td></tr>
+        <tr><th>BlueExpress (envíos)</th><td class="pending">Pendiente de prueba con datos reales</td></tr>
+      </table>
+    </div>
+
+    <h2>2. ¿Qué es “producción” el 19 de junio?</h2>
+    <p>Un cliente real podrá entrar a la web oficial de reuso, ver el catálogo, comprar, pagar con Mercado Pago, ver el costo de envío según su comuna y el equipo reuso recibirá el pedido en el panel de administración.</p>
+
+    <h2>3. Lo que ya está listo (15 may – 2 jun)</h2>
+
+    <h3>Tienda (cliente final)</h3>
+    <ul>
+      <li>Inicio, catálogo, buscador y ficha de producto (fotos, precio, ofertas, tallas y colores).</li>
+      <li>Carrito y proceso de compra (checkout).</li>
+      <li>Cuenta de cliente: registro, inicio de sesión, pedidos, direcciones y favoritos.</li>
+    </ul>
+
+    <h3>Catálogo y contenido</h3>
+    <ul>
+      <li><strong>Productos migrados</strong> al sistema (listos para venta en la plataforma).</li>
+      <li>Categorías organizadas en el panel (árbol, imágenes, textos para buscadores).</li>
+      <li>Banners del inicio administrables desde el panel.</li>
+    </ul>
+
+    <h3>Panel de administración (equipo reuso)</h3>
+    <ul>
+      <li>Acceso propio para el equipo, separado del login de clientes.</li>
+      <li>Gestión de productos, stock, pedidos, clientes, cupones y configuración.</li>
+      <li>Colores y tallas reutilizables; permisos de administrador y personal.</li>
+    </ul>
+
+    <h3>Calidad</h3>
+    <ul>
+      <li>Revisión de errores frecuentes (stock, doble compra, sesiones).</li>
+      <li>Mejoras en carrito y checkout para mayor seguridad al comprar.</li>
+    </ul>
+
+    <div class="warn">
+      <strong>Aún no probado en condiciones reales:</strong> cobro con Mercado Pago, cotización de envíos con BlueExpress, correos automáticos y publicación en el dominio oficial definitivo.
+    </div>
+
+    <div class="page-footer">
+      <span>reuso · DPCoding</span>
+      <span>Sección 1–3</span>
+    </div>
+  </section>
+
+  <section class="page">
+    <div class="doc-header">
+      <span class="logo-text">DPCoding</span>
+      <span class="doc-type">Cronograma reuso</span>
+    </div>
+
+    <h2>4. Plan hasta el 19 de junio</h2>
+    <table class="data">
+      <thead>
+        <tr><th>Fechas</th><th>Actividad</th><th>Qué verá reuso</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>3–4 jun</td><td>Servidor, dominio y seguridad (HTTPS)</td><td>La web publicada en internet (ambiente de prueba)</td></tr>
+        <tr><td>5–6 jun</td><td><strong>Prueba Mercado Pago real</strong></td><td>Primera compra de prueba con pago verdadero</td></tr>
+        <tr><td>7–8 jun</td><td><strong>Prueba BlueExpress</strong> + correos</td><td>Cotización de envío y recuperación de contraseña</td></tr>
+        <tr><td>9–10 jun</td><td>Revisión final del catálogo en línea</td><td>Validación de precios, fotos y categorías ya migradas</td></tr>
+        <tr><td>11–12 jun</td><td>Prueba completa de compra</td><td>Corrección de detalles urgentes</td></tr>
+        <tr><td>13–14 jun</td><td>Google, respaldos de datos</td><td>Mejor visibilidad en buscadores; información respaldada</td></tr>
+        <tr><td>15–16 jun</td><td>Prueba con equipo reuso</td><td>Operación del panel con confianza</td></tr>
+        <tr><td>17–18 jun</td><td>Últimos ajustes y guía rápida</td><td>Manual operativo básico</td></tr>
+      </tbody>
+    </table>
+
+    <div class="milestone">19 DE JUNIO — APERTURA EN PRODUCCIÓN</div>
+
+    <h2>5. Calendario visual</h2>
+    <div class="timeline">MAYO 2026
+15 ████████ Inicio — estructura tienda
+22 ████████ Carrito y cuentas de cliente
+28 ████████ Panel de administración
+
+JUNIO 2026
+ 1 ████████ Mejoras panel (productos, pedidos)
+ 2 ████████ Categorías, calidad y catálogo migrado
+ 3-4 ░░░░░░░░ Servidor y dominio (pendiente)
+ 5-6 ░░░░░░░░ Mercado Pago real (pendiente)
+ 7-8 ░░░░░░░░ Envíos + correos (pendiente)
+ 9-10░░░░░░░░ Revisión catálogo en línea (pendiente)
+11-12░░░░░░░░ Pruebas de compra (pendiente)
+13-14░░░░░░░░ Google y respaldos (pendiente)
+15-16░░░░░░░░ Prueba con equipo reuso (pendiente)
+17-18░░░░░░░░ Últimos ajustes (pendiente)
+19 ★★★★★★★★ TIENDA EN PRODUCCIÓN
+
+Leyenda: ███ completado · ░░░ planificado · ★ entrega</div>
+
+    <h2>6. Qué necesitamos de reuso</h2>
+    <table class="data">
+      <thead><tr><th>Antes de</th><th>Necesitamos</th></tr></thead>
+      <tbody>
+        <tr><td>5 jun</td><td>Cuenta Mercado Pago habilitada para cobrar en producción</td></tr>
+        <tr><td>7 jun</td><td>Datos de BlueExpress o confirmación del operador de envío</td></tr>
+        <tr><td>7 jun</td><td>Correo para avisos (por ejemplo ventas@reuso.cl)</td></tr>
+        <tr><td>15 jun</td><td>2–3 horas con quien operará el panel día a día</td></tr>
+      </tbody>
+    </table>
+
+    <h2>7. Próximo hito sugerido</h2>
+    <p><strong>6 de junio:</strong> reunión breve (30 minutos) después de la primera compra de prueba con Mercado Pago, para confirmar que el pago y el pedido en el panel son correctos antes de seguir con envíos y apertura.</p>
+
+    <div class="page-footer">
+      <span>reuso · DPCoding</span>
+      <span>Sección 4–7</span>
+    </div>
+  </section>
+
+  <!-- CONCLUSIÓN -->
+  <section class="page">
+    <div class="doc-header">
+      <span class="logo-text">DPCoding</span>
+      <span class="doc-type">Conclusión</span>
+    </div>
+
+    <div class="conclusion-box">
+      <h2>Conclusión</h2>
+      <p>
+        El proyecto reuso avanza según el calendario acordado: la tienda, el panel de administración y el
+        <strong>catálogo de productos ya migrado</strong> permiten operar en ambiente de prueba. El trabajo
+        concentrado hasta el <strong>19 de junio de 2026</strong> se enfoca en publicar la tienda en internet,
+        validar <strong>Mercado Pago</strong> y <strong>BlueExpress</strong> con pruebas reales, y cerrar una
+        ronda de revisión junto al equipo reuso.
+      </p>
+      <p>
+        Con la colaboración oportuna en credenciales de pago, envíos y una sesión de capacitación, es
+        realista abrir la tienda al público en la fecha prevista. DPCoding acompaña el proceso hasta el
+        go-live y los primeros días de operación.
+      </p>
+      <p style="margin-top: 16px; font-size: 10pt; color: var(--dpc-muted);">
+        Contacto: <strong style="color: #38bdf8;">dpcoding.cl</strong> · Desarrollo a medida en Chile
+      </p>
+    </div>
+
+    <p style="margin-top: 20px; font-size: 10pt; color: #64748b;">
+      Este documento resume el estado al 2 de junio de 2026. Las fechas 15 de mayo (inicio) y 19 de junio
+      (producción) son las fechas oficiales del proyecto acordadas con el cliente.
+    </p>
+
+    <div class="page-footer">
+      <span>DPCoding — Cronograma reuso</span>
+      <span>Junio 2026</span>
+    </div>
+  </section>
+
+</body>
+</html>
