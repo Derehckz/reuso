@@ -1,7 +1,7 @@
 import { CATALOG_CATEGORY_HERO } from "@/lib/media/catalog-category-hero";
 import { saveUploadedImage } from "@/lib/upload-storage";
 
-/** Guarda y normaliza la imagen de cabecera de categoría o subcategoría. */
+/** Banner panorámico del catálogo (/productos?categoria=…), no el tile del home. */
 export async function saveCategoryHeroImage(
   file: File,
   prefix: string,

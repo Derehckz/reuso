@@ -5,7 +5,11 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { AdminImageUpload } from "@/components/admin/admin-image-upload";
-import { CATALOG_CATEGORY_HERO } from "@/lib/media/catalog-category-hero";
+import {
+  HOME_CATEGORY_TILE_SPECS,
+  catalogBannerSpec,
+  homeTileSpecForSlug,
+} from "@/lib/media/home-category-image";
 import { CategorySeoPreview } from "@/components/admin/categories/category-seo-preview";
 import {
   checkCategorySlugAvailable,
@@ -305,22 +309,31 @@ export function CategoryDetailPanel({
         </div>
 
         <div className={cn("space-y-6", tab !== "images" && "hidden")}>
-          <AdminImageUpload
-            key={`image-${detail.image ?? "none"}`}
-            name="image"
-            label="Imagen principal (home y navegación)"
-            currentUrl={detail.image}
-            aspect="square"
-            hint="Cuadrícula del inicio y menú. Cuadrada recomendada. Si solo subes el banner, también se usa en el home."
-          />
-          <AdminImageUpload
-            key={`banner-${detail.bannerImage ?? "none"}`}
-            name="bannerImage"
-            label="Banner de portada (opcional)"
-            currentUrl={detail.bannerImage}
-            aspect="categoryHero"
-            hint={`Hero de /productos?categoria=…. ${CATALOG_CATEGORY_HERO.label}. Se usa en el home si no hay imagen principal.`}
-          />
+          {(() => {
+            const tileSpec =
+              HOME_CATEGORY_TILE_SPECS[homeTileSpecForSlug(detail.slug)];
+            const bannerSpec = catalogBannerSpec();
+            return (
+              <>
+                <AdminImageUpload
+                  key={`image-${detail.image ?? "none"}`}
+                  name="image"
+                  label="Imagen principal (home y navegación)"
+                  currentUrl={detail.image}
+                  aspect={tileSpec.adminAspect}
+                  hint={`${tileSpec.hint} Tamaño ideal: ${tileSpec.label} (ratio ${tileSpec.ratio}). Si se ve muy zoom, usa una foto con más margen alrededor del sujeto y vuelve a subir.`}
+                />
+                <AdminImageUpload
+                  key={`banner-${detail.bannerImage ?? "none"}`}
+                  name="bannerImage"
+                  label="Banner de portada catálogo (opcional)"
+                  currentUrl={detail.bannerImage}
+                  aspect="categoryHero"
+                  hint={`${bannerSpec.hint} Tamaño: ${bannerSpec.label} (ratio ${bannerSpec.ratio}).`}
+                />
+              </>
+            );
+          })()}
         </div>
 
         <div className={cn("space-y-4", tab !== "seo" && "hidden")}>

@@ -9,6 +9,7 @@ import {
   validateSlugFormat,
 } from "@/lib/categories/slug-validation";
 import { saveCategoryHeroImage } from "@/lib/media/save-category-hero-image";
+import { saveCategoryTileImage } from "@/lib/media/save-category-tile-image";
 import { buildSubcategorySlug } from "@/lib/constants/category-subcategories";
 import {
   bulkCategorySchema,
@@ -77,7 +78,11 @@ async function parseImageFields(
   const imageFile = formData.get("image");
   if (imageFile instanceof File && imageFile.size > 0) {
     try {
-      image = await saveCategoryHeroImage(imageFile, `${prefix}-${slug}-main`);
+      image = await saveCategoryTileImage(
+        imageFile,
+        `${prefix}-${slug}-main`,
+        slug,
+      );
     } catch (error) {
       return {
         error:

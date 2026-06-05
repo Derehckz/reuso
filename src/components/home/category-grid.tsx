@@ -3,30 +3,38 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { ModaCircularBadge } from "@/components/brand/moda-circular-badge";
 import { categoryRepository } from "@/server/repositories/category.repository";
+import type { CategoryTile } from "@/lib/constants/category-tiles";
+
+function tileAspectClass(tile: CategoryTile): string {
+  if (tile.row === "top") {
+    return "aspect-[4/5] sm:aspect-[3/4]";
+  }
+  if (tile.bottomColSpan === 3) {
+    return "aspect-[2/1] sm:col-span-3 sm:aspect-[3/1]";
+  }
+  return "aspect-[4/5] sm:col-span-1 sm:aspect-[3/4]";
+}
 
 function CategoryTileCard({
-  title,
-  titleLines,
-  href,
-  imageSrc,
-  imageAlt,
-  titleAlign = "left",
-  className,
+  tile,
 }: {
-  title: string;
-  titleLines?: [string, string];
-  href: string;
-  imageSrc: string;
-  imageAlt: string;
-  titleAlign?: "left" | "right";
-  className?: string;
+  tile: CategoryTile & { imageSrc: string };
 }) {
+  const {
+    title,
+    titleLines,
+    href,
+    imageSrc,
+    imageAlt,
+    titleAlign = "left",
+  } = tile;
+
   return (
     <Link
       href={href}
       className={cn(
-        "group relative block h-full min-h-[220px] overflow-hidden bg-neutral-900",
-        className,
+        "group relative block overflow-hidden bg-neutral-900",
+        tileAspectClass(tile),
       )}
     >
       <Image
@@ -34,11 +42,15 @@ function CategoryTileCard({
         alt={imageAlt}
         fill
         unoptimized
-        sizes="(max-width: 640px) 100vw, 33vw"
-        className="object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-110"
+        sizes={
+          tile.bottomColSpan === 3
+            ? "(max-width: 640px) 100vw, 75vw"
+            : "(max-width: 640px) 100vw, 33vw"
+        }
+        className="object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
       />
       <div
-        className="absolute inset-0 z-[1] bg-gradient-to-t from-black/70 via-black/20 to-black/5 transition-opacity duration-500 group-hover:from-black/75"
+        className="absolute inset-0 z-[1] bg-gradient-to-t from-black/60 via-black/15 to-transparent"
         aria-hidden
       />
       <ModaCircularBadge />
@@ -80,34 +92,12 @@ export async function CategoryGrid() {
     <section aria-label="Comprar por categoría" className="w-full">
       <div className="grid grid-cols-1 sm:grid-cols-3">
         {topTiles.map((tile) => (
-          <CategoryTileCard
-            key={tile.id}
-            title={tile.title}
-            titleLines={tile.titleLines}
-            href={tile.href}
-            imageSrc={tile.imageSrc}
-            imageAlt={tile.imageAlt}
-            titleAlign={tile.titleAlign}
-            className="aspect-square sm:aspect-[4/5] lg:aspect-square"
-          />
+          <CategoryTileCard key={tile.id} tile={tile} />
         ))}
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-4">
         {bottomTiles.map((tile) => (
-          <CategoryTileCard
-            key={tile.id}
-            title={tile.title}
-            titleLines={tile.titleLines}
-            href={tile.href}
-            imageSrc={tile.imageSrc}
-            imageAlt={tile.imageAlt}
-            titleAlign={tile.titleAlign}
-            className={cn(
-              tile.bottomColSpan === 3
-                ? "aspect-[21/9] sm:col-span-3 sm:aspect-[3/1]"
-                : "aspect-[4/5] sm:col-span-1 sm:aspect-[3/4]",
-            )}
-          />
+          <CategoryTileCard key={tile.id} tile={tile} />
         ))}
       </div>
     </section>
