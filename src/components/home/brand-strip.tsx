@@ -39,22 +39,54 @@ async function resolveBrands(): Promise<BrandItem[]> {
   }));
 }
 
+type BrandStripVariant = "default" | "compact";
+
+const VARIANT_STYLES: Record<
+  BrandStripVariant,
+  {
+    section: string;
+    rowGap: string;
+    marqueeGap: string;
+    logoCell: string;
+    imageMax: { width: number; height: number };
+  }
+> = {
+  default: {
+    section: "border-y border-neutral-900/5 py-5 md:py-7",
+    rowGap: "mt-4 md:mt-5",
+    marqueeGap: "gap-10 px-5 md:gap-14 md:px-8",
+    logoCell: "h-14 w-[100px] md:h-20 md:w-[130px]",
+    imageMax: { width: 130, height: 80 },
+  },
+  compact: {
+    section: "border-b border-neutral-900/5 py-2.5 md:py-3",
+    rowGap: "mt-2 md:mt-2.5",
+    marqueeGap: "gap-6 px-4 md:gap-8 md:px-6",
+    logoCell: "h-8 w-[56px] md:h-10 md:w-[72px]",
+    imageMax: { width: 72, height: 40 },
+  },
+};
+
 function MarqueeRow({
   brands,
   direction,
+  variant,
   className,
 }: {
   brands: BrandItem[];
   direction: "forward" | "reverse";
+  variant: BrandStripVariant;
   className?: string;
 }) {
   const loop = [...brands, ...brands];
+  const styles = VARIANT_STYLES[variant];
 
   return (
-    <div className={cn("marquee-track relative overflow-hidden", className)}>
+    <div className={cn("marquee-track relative w-full overflow-hidden", className)}>
       <div
         className={cn(
-          "flex w-max items-center gap-10 px-5 md:gap-14 md:px-8",
+          "flex w-max items-center",
+          styles.marqueeGap,
           direction === "reverse"
             ? "animate-brand-marquee-reverse"
             : "animate-brand-marquee",
@@ -63,13 +95,16 @@ function MarqueeRow({
         {loop.map((brand, i) => (
           <div
             key={`${brand.id}-${i}`}
-            className="flex h-14 w-[100px] shrink-0 items-center justify-center md:h-20 md:w-[130px]"
+            className={cn(
+              "flex shrink-0 items-center justify-center",
+              styles.logoCell,
+            )}
           >
             <Image
               src={brand.imageSrc}
               alt={brand.name}
-              width={130}
-              height={80}
+              width={styles.imageMax.width}
+              height={styles.imageMax.height}
               unoptimized
               style={{
                 width: "auto",
@@ -86,17 +121,28 @@ function MarqueeRow({
   );
 }
 
-export async function BrandStrip() {
+type BrandStripProps = {
+  variant?: BrandStripVariant;
+};
+
+export async function BrandStrip({ variant = "default" }: BrandStripProps) {
   const brands = await resolveBrands();
   if (brands.length === 0) return null;
+
+  const styles = VARIANT_STYLES[variant];
 
   return (
     <section
       aria-label="Marcas seleccionadas"
-      className="border-y border-neutral-900/5 bg-white py-5 md:py-7"
+      className={cn("w-full bg-white", styles.section)}
     >
-      <MarqueeRow brands={brands} direction="forward" />
-      <MarqueeRow brands={brands} direction="reverse" className="mt-4 md:mt-5" />
+      <MarqueeRow brands={brands} direction="forward" variant={variant} />
+      <MarqueeRow
+        brands={brands}
+        direction="reverse"
+        variant={variant}
+        className={styles.rowGap}
+      />
     </section>
   );
 }

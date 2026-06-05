@@ -26,6 +26,7 @@ type CatalogViewProps = {
   categories: CatalogCategory[];
   title: string;
   hero?: CatalogHero | null;
+  afterHero?: React.ReactNode;
 };
 
 export function CatalogView({
@@ -38,6 +39,7 @@ export function CatalogView({
   categories,
   title,
   hero,
+  afterHero,
 }: CatalogViewProps) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const searchParams = useSearchParams();
@@ -45,7 +47,12 @@ export function CatalogView({
 
   return (
     <>
-      <CatalogHeroHeader title={title} hero={hero} />
+      <CatalogHeroHeader
+        title={title}
+        hero={hero}
+        className={afterHero ? "!mb-0" : undefined}
+      />
+      {afterHero}
       <Container
         className={cn(
           "section-editorial",

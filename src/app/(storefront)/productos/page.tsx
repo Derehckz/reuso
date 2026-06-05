@@ -110,7 +110,6 @@ async function CatalogContent({
   return (
     <>
       <CatalogJsonLd products={catalog.items} total={catalog.total} />
-      {showBrandStrip && <BrandStrip />}
       <CatalogView
         products={catalog.items}
         total={catalog.total}
@@ -121,6 +120,7 @@ async function CatalogContent({
         categories={categories}
         title={title}
         hero={hero}
+        afterHero={showBrandStrip ? <BrandStrip variant="compact" /> : undefined}
       />
     </>
   );
