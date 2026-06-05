@@ -15,6 +15,7 @@
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:seed": "tsx prisma/seed.ts",
+    "admin:create": "tsx scripts/create-admin.ts",
     "categories:sync": "tsx scripts/sync-categories.ts",
     "carousel:import": "node scripts/import-carousel-images.mjs",
     "brands:import": "node scripts/import-brand-logos.mjs",

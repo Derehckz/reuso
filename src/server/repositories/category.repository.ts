@@ -42,13 +42,20 @@ async function loadNavFromDatabase() {
   return shapeNavCategories(categories);
 }
 
+function pickTileImage(
+  image: string | null | undefined,
+  bannerImage: string | null | undefined,
+): string | null {
+  return image ?? bannerImage ?? null;
+}
+
 async function loadHomeTilesFromDatabase() {
   const categories = await prisma.category.findMany({
     where: {
       ...activeCategory,
       slug: { in: ["mujer", "hombre", "ropa-deportiva"] },
     },
-    select: { slug: true, image: true },
+    select: { slug: true, image: true, bannerImage: true },
   });
 
   const subcategories = await prisma.subcategory.findMany({
@@ -56,11 +63,15 @@ async function loadHomeTilesFromDatabase() {
       ...activeSubcategory,
       slug: { in: ["mujer-carteras", "mujer-zapatillas"] },
     },
-    select: { slug: true, image: true },
+    select: { slug: true, image: true, bannerImage: true },
   });
 
-  const categoryImage = new Map(categories.map((c) => [c.slug, c.image]));
-  const subcategoryImage = new Map(subcategories.map((s) => [s.slug, s.image]));
+  const categoryImage = new Map(
+    categories.map((c) => [c.slug, pickTileImage(c.image, c.bannerImage)]),
+  );
+  const subcategoryImage = new Map(
+    subcategories.map((s) => [s.slug, pickTileImage(s.image, s.bannerImage)]),
+  );
 
   return HOME_CATEGORY_TILES.map((tile) => {
     const imageFromCategory = categoryImage.get(tile.id);
@@ -69,7 +80,8 @@ async function loadHomeTilesFromDatabase() {
       ? subcategoryImage.get(categoryFromHref)
       : null;
 
-    const imageSrc = imageFromCategory ?? imageFromSubcategory ?? tile.imageSrc;
+    const imageSrc =
+      imageFromCategory ?? imageFromSubcategory ?? tile.imageSrc;
     return {
       ...tile,
       imageSrc,

@@ -80,10 +80,23 @@ export function CategoryDetailPanel({
     [detail.id, detail.type],
   );
 
+  function appendImageFiles(form: HTMLFormElement, fd: FormData) {
+    for (const field of ["image", "bannerImage"] as const) {
+      const input = form.querySelector(
+        `input[type="file"][name="${field}"]`,
+      ) as HTMLInputElement | null;
+      if (input?.files?.[0]?.size) {
+        fd.set(field, input.files[0]);
+      }
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
-    const fd = new FormData(e.currentTarget);
+    const form = e.currentTarget;
+    const fd = new FormData(form);
+    appendImageFiles(form, fd);
     fd.set("name", name);
     fd.set("slug", slug);
     fd.set("sortOrder", String(sortOrder));
@@ -293,18 +306,20 @@ export function CategoryDetailPanel({
 
         <div className={cn("space-y-6", tab !== "images" && "hidden")}>
           <AdminImageUpload
+            key={`image-${detail.image ?? "none"}`}
             name="image"
-            label="Imagen principal"
+            label="Imagen principal (home y navegación)"
             currentUrl={detail.image}
             aspect="square"
-            hint="Miniatura / navegación. Cuadrada recomendada."
+            hint="Cuadrícula del inicio y menú. Cuadrada recomendada. Si solo subes el banner, también se usa en el home."
           />
           <AdminImageUpload
+            key={`banner-${detail.bannerImage ?? "none"}`}
             name="bannerImage"
             label="Banner de portada (opcional)"
             currentUrl={detail.bannerImage}
             aspect="categoryHero"
-            hint={`Hero del catálogo. ${CATALOG_CATEGORY_HERO.label}. Si no hay banner, se usa la imagen principal.`}
+            hint={`Hero de /productos?categoria=…. ${CATALOG_CATEGORY_HERO.label}. Se usa en el home si no hay imagen principal.`}
           />
         </div>
 

@@ -58,6 +58,7 @@ export function AdminImageUpload({
   const [dragOver, setDragOver] = useState(false);
   const [pickedName, setPickedName] = useState<string | null>(null);
   const objectUrlRef = useRef<string | null>(null);
+  const savedUrlRef = useRef(currentUrl);
 
   const revokeObjectUrl = useCallback(() => {
     if (objectUrlRef.current) {
@@ -71,10 +72,17 @@ export function AdminImageUpload({
   }, [revokeObjectUrl]);
 
   useEffect(() => {
+    if (currentUrl !== savedUrlRef.current) {
+      savedUrlRef.current = currentUrl;
+      revokeObjectUrl();
+      setPickedName(null);
+      setPreview(currentUrl ?? null);
+      return;
+    }
     if (!pickedName) {
       setPreview(currentUrl ?? null);
     }
-  }, [currentUrl, pickedName]);
+  }, [currentUrl, pickedName, revokeObjectUrl]);
 
   const applyFile = useCallback(
     (file: File | undefined) => {
