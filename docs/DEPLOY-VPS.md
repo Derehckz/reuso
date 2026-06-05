@@ -1,122 +1,178 @@
 # Despliegue en VPS — staging `reuso.dpcoding.cl`
 
-Guía para mostrar el avance al cliente en **https://reuso.dpcoding.cl**.
+Guía para mostrar el avance al cliente en **https://reuso.dpcoding.cl** (Cloudflare SSL + Nginx + PM2 + Docker Postgres).
 
-## DNS
+**No uses Certbot** si el certificado lo termina Cloudflare.
 
-En el panel de **dpcoding.cl** (o tu DNS):
+## DNS y SSL (Cloudflare)
 
-| Tipo | Nombre | Valor |
-|------|--------|--------|
-| **A** | `reuso` | IP pública del VPS |
+En **Cloudflare** → zona `dpcoding.cl`:
 
-Propagación: unos minutos a 1 h. Prueba: `ping reuso.dpcoding.cl`.
+| Campo | Valor |
+|-------|--------|
+| Tipo | **A** |
+| Nombre | `reuso` |
+| Contenido | IP del VPS |
+| Proxy | **Activado** (nube naranja) |
 
-## Qué necesitas en el VPS
+**SSL/TLS → Overview** (modo recomendado con Nginx solo en puerto 80):
+
+| Modo | Origen (VPS) |
+|------|----------------|
+| **Full** | Nginx escucha **80** → proxy a `:3000` (sin cert en el VPS) |
+| **Full (strict)** | Nginx **443** con [Origin Certificate](https://developers.cloudflare.com/ssl/origin-configuration/origin-ca/) de Cloudflare |
+
+Evita **Flexible** si Auth/cookies dan problemas (Cloudflare→origen en HTTP plano).
+
+Prueba: `https://reuso.dpcoding.cl` (HTTPS lo da Cloudflare, no el VPS).
+
+## Requisitos en el VPS
 
 | Componente | Versión |
 |------------|---------|
-| Node.js | 20 LTS |
-| PostgreSQL | 16 (Docker: `docker compose up -d`) |
-| Reverse proxy | Caddy o Nginx |
-| Proceso | PM2 |
+| Node.js | **22.12+** (Prisma 7 no acepta 20.18) |
+| PostgreSQL | 16 (`docker compose up -d`) |
+| Nginx | reverse proxy |
+| PM2 | proceso `reuso` |
 
-**No uses `prisma dev` en el VPS.** Solo `postgresql://...`.
+**No uses `prisma dev` en el VPS.**
 
-## 1. Variables de entorno (`.env` en el servidor)
+## 1. Código y base de datos
+
+```bash
+cd /var/www
+git clone https://github.com/Derehckz/reuso.git
+cd reuso
+docker compose up -d
+```
+
+## 2. `.env` en el servidor
 
 ```env
-DATABASE_URL="postgresql://postgres:CAMBIA_PASSWORD@127.0.0.1:5432/reuso?schema=public"
+DATABASE_URL="postgresql://postgres:postgres@127.0.0.1:5432/reuso?schema=public"
 
 NEXT_PUBLIC_APP_URL="https://reuso.dpcoding.cl"
-NEXT_PUBLIC_APP_NAME="reuso"
-AUTH_SECRET="genera-con-openssl-rand-base64-32"
 AUTH_URL="https://reuso.dpcoding.cl"
+NEXT_PUBLIC_APP_NAME="reuso"
 
-MERCADOPAGO_ENV="sandbox"
-MERCADOPAGO_ACCESS_TOKEN="TEST-..."
-MERCADOPAGO_PUBLIC_KEY="TEST-..."
-MERCADOPAGO_WEBHOOK_SECRET=""
-
+AUTH_SECRET="openssl rand -base64 32"
 CRON_SECRET="otro-secreto-largo"
 ```
 
-`AUTH_URL` y `NEXT_PUBLIC_APP_URL` deben coincidir **exactamente** con la URL pública (con `https://`).
+Cambia la contraseña de Postgres en producción (edita `docker-compose.yml` o solo `DATABASE_URL`).
 
-## 2. Base de datos y app
+## 3. Node, build y PM2
 
 ```bash
-cd /var/www/reuso   # o tu ruta
-docker compose up -d
+# Node 22 si hace falta
+curl -fsSL https://deb.nodesource.com/setup_22.x | bash -
+apt install -y nodejs
+node -v   # v22.12+
+
+cd /var/www/reuso
+rm -rf node_modules
 npm ci
-npx prisma migrate deploy   # o: npx prisma db push
+npx prisma db push
 npm run db:seed
 npm run build
-pm2 start npm --name reuso -- start
+
+npm i -g pm2
+pm2 delete reuso 2>/dev/null
+pm2 start deploy/ecosystem.config.cjs
 pm2 save
+pm2 startup
 ```
 
-## 3. Caddy (HTTPS automático)
-
-`/etc/caddy/Caddyfile`:
-
-```caddy
-reuso.dpcoding.cl {
-  reverse_proxy localhost:3000
-}
-```
+Comprobar app:
 
 ```bash
-sudo systemctl reload caddy
+curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:3000
+pm2 logs reuso --lines 30
 ```
 
-Caddy pide el certificado Let's Encrypt solo si el DNS ya apunta al VPS.
+## 4. Nginx (igual que el vhost WordPress + Cloudflare)
 
-## 4. URLs para el cliente
+Mismo patrón que WordPress + Cloudflare. Next.js en **127.0.0.1:3010** (PM2; puertos 3000/3001 están ocupados en este VPS).
+
+Plantilla: [`deploy/nginx/reuso.dpcoding.cl.conf`](../deploy/nginx/reuso.dpcoding.cl.conf)
+
+```bash
+cd /var/www/reuso
+cp deploy/nginx/reuso.dpcoding.cl.conf /etc/nginx/sites-available/reuso.dpcoding.cl
+ln -sf /etc/nginx/sites-available/reuso.dpcoding.cl /etc/nginx/sites-enabled/
+nginx -t
+systemctl reload nginx
+```
+
+Prueba con el dominio (HTTP):
+
+```bash
+curl -I -H "Host: reuso.dpcoding.cl" http://127.0.0.1
+```
+
+## 5. Comprobar detrás de Cloudflare
+
+En el VPS (origen HTTP):
+
+```bash
+curl -I -H "Host: reuso.dpcoding.cl" http://127.0.0.1
+```
+
+Desde tu PC:
+
+```bash
+curl -I https://reuso.dpcoding.cl
+```
+
+Si ves **522** o **521**: Cloudflare no alcanza el VPS (firewall, Nginx caído, IP DNS mal).
+
+Si cambias `.env`:
+
+```bash
+cd /var/www/reuso && npm run build && pm2 restart reuso
+```
+
+## 6. URLs para el cliente
 
 | Qué | URL |
 |-----|-----|
 | Tienda | https://reuso.dpcoding.cl |
-| Login clientes | https://reuso.dpcoding.cl/auth/iniciar-sesion |
 | Admin | https://reuso.dpcoding.cl/admin/login |
 | Integraciones | https://reuso.dpcoding.cl/admin/integraciones |
 
-Seed demo: `admin@reuso.cl` / `Admin123!` — **cambia la contraseña** en staging.
+Seed: `admin@reuso.cl` / `Admin123!` — cambiar en staging.
 
-## 5. Mercado Pago (panel developers)
+## 7. Mercado Pago (sandbox)
 
-Webhook de notificaciones:
+Webhook: `https://reuso.dpcoding.cl/api/webhooks/mercadopago`
 
-```text
-https://reuso.dpcoding.cl/api/webhooks/mercadopago
-```
-
-## 6. Cron (órdenes sin pago)
+## 8. Cron (órdenes sin pago)
 
 ```cron
 */15 * * * * curl -fsS -H "Authorization: Bearer TU_CRON_SECRET" https://reuso.dpcoding.cl/api/cron/expire-orders
 ```
 
-## 7. Actualizar después de cambios
+## 9. Actualizar código (cada push)
+
+Guía detallada: **[DEPLOY-WORKFLOW.md](./DEPLOY-WORKFLOW.md)** (local → VPS, sin borrar productos ni órdenes).
 
 ```bash
-git pull
-npm ci
-npx prisma migrate deploy
+cd /var/www/reuso
+git pull origin master
 npm run build
 pm2 restart reuso
 ```
 
-## 8. Opcional: staging no indexable
-
-En Caddy, `basicauth` o cabecera `X-Robots-Tag` / `robots.txt` con `Disallow: /` mientras sea solo demo.
+`npm ci` solo si cambió `package-lock.json`. `npx prisma db push` solo si cambió `schema.prisma`.
 
 ## Checklist
 
-- [ ] Registro DNS **A** `reuso` → IP VPS
-- [ ] `npm run build` OK en servidor
-- [ ] `public/fonts/Gotham-Bold.woff2` presente
-- [ ] `.env` con URLs `https://reuso.dpcoding.cl`
-- [ ] Google OAuth: si lo usas, agregar redirect URI en Google Cloud con esa URL
+- [ ] DNS **A** `reuso` → IP VPS
+- [ ] Node **≥ 22.12**
+- [ ] `pm2 status` → `reuso` online
+- [ ] `curl http://127.0.0.1:3000` → 200
+- [ ] Nginx `nginx -t` OK (solo puerto 80 si usas Cloudflare **Full**)
+- [ ] Cloudflare proxy ON + SSL **Full** (o strict + origin cert)
+- [ ] `.env` con `https://reuso.dpcoding.cl`
 
-`next.config.ts` ya incluye `reuso.dpcoding.cl` para imágenes remotas del mismo host.
+`next.config.ts` ya permite imágenes desde `reuso.dpcoding.cl`.

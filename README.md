@@ -65,7 +65,8 @@ npm run db:seed
 **Categorías (admin):** [http://localhost:3000/admin/categorias](http://localhost:3000/admin/categorias) — árbol, SEO, banner, acciones masivas.
 
 **Cronograma cliente (PDF):** [docs/cronograma-reuso-cliente.pdf](docs/cronograma-reuso-cliente.pdf) · [versión editable](docs/CRONOGRAMA-CLIENTE.md)  
-**Cronograma técnico (equipo dev):** [docs/PROJECT-GANTT.md](docs/PROJECT-GANTT.md)
+**Cronograma técnico (equipo dev):** [docs/PROJECT-GANTT.md](docs/PROJECT-GANTT.md)  
+**Deploy (push local → VPS):** [docs/DEPLOY-WORKFLOW.md](docs/DEPLOY-WORKFLOW.md) · primera vez en servidor: [docs/DEPLOY-VPS.md](docs/DEPLOY-VPS.md)
 
 **Accesos de sesión (desarrollo):**
 

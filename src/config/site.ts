@@ -1,8 +1,10 @@
+import { resolveSiteUrl } from "./site-url";
+
 export const siteConfig = {
   name: "reuso",
   description:
     "Ropa reutilizada americana de alta calidad. Moda premium, selección curada y diseño editorial.",
-  url: process.env.NEXT_PUBLIC_APP_URL ?? "https://reuso.cl",
+  url: resolveSiteUrl(),
   locale: "es-CL",
   currency: "CLP",
   links: {
