@@ -24,8 +24,6 @@ export default async function HomePage() {
       <HomeSplash />
       <HeroCarousel />
 
-      <CategoryGrid />
-
       <BrandStrip />
 
       {featuredProducts.length > 0 && (
@@ -35,6 +33,8 @@ export default async function HomePage() {
           viewAllHref="/productos?sort=featured"
         />
       )}
+
+      <CategoryGrid />
 
       {newProducts.length > 0 && (
         <ProductRow

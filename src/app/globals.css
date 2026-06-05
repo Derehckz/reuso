@@ -339,7 +339,12 @@ body {
     animation: brand-marquee 45s linear infinite;
   }
 
-  .animate-brand-marquee:hover {
+  .animate-brand-marquee-reverse {
+    animation: brand-marquee 50s linear infinite reverse;
+  }
+
+  .marquee-track:hover .animate-brand-marquee,
+  .marquee-track:hover .animate-brand-marquee-reverse {
     animation-play-state: paused;
   }
 
