@@ -1,15 +1,18 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
-import { ExternalLink, MapPin, Navigation } from "lucide-react";
+import { Clock, ExternalLink, MapPin, Navigation } from "lucide-react";
 import {
   ALL_STORE_LOCATIONS,
   STORE_CITY_GROUPS,
   STORE_CITY_COUNT,
+  STORE_HOURS,
   STORE_LOCATION_COUNT,
   googleMapsDirectionsUrl,
   googleMapsEmbedUrl,
   googleMapsSearchUrl,
+  storeImageSrc,
   type StoreLocation,
 } from "@/lib/constants/store-locations";
 import { cn } from "@/lib/utils";
@@ -37,6 +40,15 @@ export function StoreLocator() {
 
   return (
     <div className="mt-12">
+      <div className="mx-auto mb-10 flex max-w-md flex-col gap-2 rounded-sm border border-neutral-200 bg-neutral-50 px-5 py-4 text-sm text-neutral-700">
+        <div className="flex items-center gap-2 text-foreground">
+          <Clock className="h-4 w-4 shrink-0 text-brand-green" aria-hidden />
+          <span className="text-label-sm uppercase tracking-widest">Horario</span>
+        </div>
+        <p>{STORE_HOURS.weekdays}</p>
+        <p>{STORE_HOURS.sunday}</p>
+      </div>
+
       <div className="flex flex-wrap items-center justify-center gap-2">
         <FilterChip
           active={selectedCity === "all"}
@@ -73,30 +85,42 @@ export function StoreLocator() {
               <ul>
                 {group.locations.map((location) => {
                   const isActive = selected.id === location.id;
+                  const image = storeImageSrc(location);
                   return (
                     <li key={location.id}>
                       <button
                         type="button"
                         onClick={() => selectLocation(location)}
                         className={cn(
-                          "flex w-full gap-3 border-l-2 px-4 py-4 text-left transition-colors",
+                          "flex w-full gap-3 border-l-2 px-3 py-3 text-left transition-colors",
                           isActive
                             ? "border-brand-orange bg-brand-beige/30"
                             : "border-transparent hover:bg-neutral-50",
                         )}
                       >
-                        <MapPin
-                          className={cn(
-                            "mt-0.5 h-4 w-4 shrink-0",
-                            isActive ? "text-brand-orange" : "text-neutral-400",
-                          )}
-                          strokeWidth={1.5}
-                        />
-                        <span>
-                          <span className="block text-sm font-medium text-foreground">
-                            {location.address}
+                        <span className="relative h-14 w-14 shrink-0 overflow-hidden rounded-sm bg-neutral-100">
+                          <Image
+                            src={image}
+                            alt={`Fachada ${location.address}`}
+                            fill
+                            className="object-cover"
+                            sizes="56px"
+                          />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="flex items-start gap-1.5">
+                            <MapPin
+                              className={cn(
+                                "mt-0.5 h-3.5 w-3.5 shrink-0",
+                                isActive ? "text-brand-orange" : "text-neutral-400",
+                              )}
+                              strokeWidth={1.5}
+                            />
+                            <span className="block text-sm font-medium text-foreground">
+                              {location.address}
+                            </span>
                           </span>
-                          <span className="mt-0.5 block text-xs text-neutral-500">
+                          <span className="mt-0.5 block pl-5 text-xs text-neutral-500">
                             {location.city}
                           </span>
                         </span>
@@ -110,12 +134,31 @@ export function StoreLocator() {
         </div>
 
         <div className="flex flex-col gap-4 lg:sticky lg:top-24">
+          <div className="overflow-hidden rounded-sm border border-neutral-200 bg-neutral-900">
+            <div className="relative aspect-[16/10] w-full">
+              <Image
+                key={selected.id}
+                src={storeImageSrc(selected)}
+                alt={`Tienda REUSO — ${selected.address}, ${selected.city}`}
+                fill
+                priority
+                className="object-cover"
+                sizes="(max-width: 1024px) 100vw, 50vw"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+              <div className="absolute bottom-0 left-0 right-0 p-5 text-white">
+                <p className="font-editorial text-2xl md:text-3xl">{selected.address}</p>
+                <p className="mt-1 text-sm text-white/85">{selected.city}, Chile</p>
+              </div>
+            </div>
+          </div>
+
           <div className="overflow-hidden rounded-sm border border-neutral-200 bg-neutral-100">
             <iframe
               key={selected.id}
               title={`Mapa — ${selected.address}, ${selected.city}`}
               src={googleMapsEmbedUrl(selected)}
-              className="aspect-[4/3] w-full min-h-[280px] border-0 md:min-h-[360px]"
+              className="aspect-[4/3] w-full min-h-[240px] border-0 md:min-h-[300px]"
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
               allowFullScreen
@@ -123,8 +166,13 @@ export function StoreLocator() {
           </div>
 
           <div className="rounded-sm border border-neutral-200 bg-neutral-50 p-5">
-            <p className="font-editorial text-xl text-foreground">{selected.address}</p>
-            <p className="text-body-muted mt-1 text-sm">{selected.city}, Chile</p>
+            <div className="flex items-start gap-2 text-sm text-neutral-700">
+              <Clock className="mt-0.5 h-4 w-4 shrink-0 text-brand-green" aria-hidden />
+              <div>
+                <p>{STORE_HOURS.weekdays}</p>
+                <p>{STORE_HOURS.sunday}</p>
+              </div>
+            </div>
             <div className="mt-5 flex flex-col gap-3 sm:flex-row">
               <a
                 href={googleMapsDirectionsUrl(selected)}

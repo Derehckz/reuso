@@ -3,7 +3,18 @@ export type StoreLocation = {
   /** Calle y número */
   address: string;
   city: string;
+  /** Foto de fachada; por defecto imagen referencial hasta cargar una por tienda */
+  imageSrc?: string;
 };
+
+/** Horario de atención (todas las sucursales). */
+export const STORE_HOURS = {
+  weekdays: "Lunes a sábado: 10:30 – 19:30",
+  sunday: "Domingo: 11:00 – 18:30",
+} as const;
+
+/** Imagen referencial de fachada hasta tener foto por sucursal. */
+export const DEFAULT_STORE_IMAGE = "/images/tiendas/ejemplo-tienda.webp";
 
 export type StoreCityGroup = {
   city: string;
@@ -77,7 +88,21 @@ export const STORE_CITY_GROUPS: StoreCityGroup[] = [
     city: "Castro",
     locations: [{ id: "castro-san-martin-471", address: "San Martín 471", city: "Castro" }],
   },
+  {
+    city: "Panguipulli",
+    locations: [
+      {
+        id: "panguipulli-ohiggins-484",
+        address: "Bernardo O'Higgins 484",
+        city: "Panguipulli",
+      },
+    ],
+  },
 ];
+
+export function storeImageSrc(location: StoreLocation): string {
+  return location.imageSrc ?? DEFAULT_STORE_IMAGE;
+}
 
 export const ALL_STORE_LOCATIONS: StoreLocation[] = STORE_CITY_GROUPS.flatMap(
   (group) => group.locations,
