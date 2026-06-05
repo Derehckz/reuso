@@ -40,15 +40,6 @@ export function StoreLocator() {
 
   return (
     <div className="mt-12">
-      <div className="mx-auto mb-10 flex max-w-md flex-col gap-2 rounded-sm border border-neutral-200 bg-neutral-50 px-5 py-4 text-sm text-neutral-700">
-        <div className="flex items-center gap-2 text-foreground">
-          <Clock className="h-4 w-4 shrink-0 text-brand-green" aria-hidden />
-          <span className="text-label-sm uppercase tracking-widest">Horario</span>
-        </div>
-        <p>{STORE_HOURS.weekdays}</p>
-        <p>{STORE_HOURS.sunday}</p>
-      </div>
-
       <div className="flex flex-wrap items-center justify-center gap-2">
         <FilterChip
           active={selectedCity === "all"}
@@ -123,6 +114,7 @@ export function StoreLocator() {
                           <span className="mt-0.5 block pl-5 text-xs text-neutral-500">
                             {location.city}
                           </span>
+                          <StoreHoursLines className="mt-1.5 pl-5" />
                         </span>
                       </button>
                     </li>
@@ -197,6 +189,15 @@ export function StoreLocator() {
         </div>
       </div>
     </div>
+  );
+}
+
+function StoreHoursLines({ className }: { className?: string }) {
+  return (
+    <span className={cn("block text-[11px] leading-snug text-neutral-500", className)}>
+      <span className="block">{STORE_HOURS.weekdays}</span>
+      <span className="block">{STORE_HOURS.sunday}</span>
+    </span>
   );
 }
 
