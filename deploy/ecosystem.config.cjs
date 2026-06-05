@@ -1,11 +1,11 @@
-/** PM2 — puerto 3010 (evitar 3000=Docker y 3001=otra API en el VPS). */
+/** PM2 — solo 127.0.0.1:3010 (Nginx hace proxy; no exponer *:3010 al internet). */
 module.exports = {
   apps: [
     {
       name: "reuso",
       cwd: "/var/www/reuso",
-      script: "node_modules/next/dist/bin/next",
-      args: "start -p 3010",
+      script: "npm",
+      args: "run start:prod",
       env: {
         NODE_ENV: "production",
         PORT: "3010",

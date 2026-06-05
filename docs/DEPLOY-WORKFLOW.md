@@ -195,6 +195,17 @@ ufw enable
 
 Solo deben quedar abiertos **22** (SSH), **80** y **443** (Nginx). No abras 5432, 3000 ni 3010 al mundo.
 
+Tras cambiar `deploy/ecosystem.config.cjs` (Next en `127.0.0.1:3010` vía `npm run start:prod`):
+
+```bash
+pm2 delete reuso
+pm2 start deploy/ecosystem.config.cjs
+pm2 save
+ss -tlnp | grep 3010   # debe ser 127.0.0.1:3010, no *:3010
+```
+
+Si sigue en `*:3010`, comprueba el comando real: `pm2 show reuso | grep -A3 script`. Debe usar `npm run start:prod` (`next start --hostname 127.0.0.1`).
+
 ### 4. Backups automáticos
 
 Si vuelven a borrar datos, sin backup solo queda reimportar WooCommerce.

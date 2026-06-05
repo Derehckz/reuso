@@ -7,6 +7,7 @@
     "dev:db": "prisma dev",
     "build": "prisma generate && next build",
     "start": "next start",
+    "start:prod": "next start --hostname 127.0.0.1 -p 3010",
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
