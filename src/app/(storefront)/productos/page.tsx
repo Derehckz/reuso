@@ -7,6 +7,7 @@ import { absoluteUrl } from "@/lib/utils";
 import { CatalogView } from "@/components/catalog/catalog-view";
 import { CatalogJsonLd } from "@/components/catalog/catalog-json-ld";
 import { CatalogPageSkeleton } from "@/components/catalog/catalog-page-skeleton";
+import { BrandStrip } from "@/components/home/brand-strip";
 import {
   resolveCatalogHeroFromNav,
   resolveCatalogTitle,
@@ -16,6 +17,11 @@ import { categoryRepository } from "@/server/repositories/category.repository";
 import { getCategorySeoBySlug } from "@/server/repositories/admin/categories.repository";
 
 export const revalidate = 60;
+
+function isCategoryCatalogPage(filters: ReturnType<typeof parseCatalogParams>) {
+  if (filters.q) return false;
+  return Boolean(filters.category || filters.gender);
+}
 
 type PageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -99,9 +105,12 @@ async function CatalogContent({
     hero = resolveCatalogHeroFromNav(categories, filters.category);
   }
 
+  const showBrandStrip = isCategoryCatalogPage(filters);
+
   return (
     <>
       <CatalogJsonLd products={catalog.items} total={catalog.total} />
+      {showBrandStrip && <BrandStrip />}
       <CatalogView
         products={catalog.items}
         total={catalog.total}

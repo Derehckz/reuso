@@ -1,15 +1,20 @@
 export type CategoryTile = {
   id: string;
   title: string;
-  /** Título en dos líneas (ej. FOOT + WEAR) */
   titleLines?: [string, string];
   href: string;
   imageSrc: string;
   imageAlt: string;
   titleAlign?: "left" | "right";
+  /** Posición del título sobre la imagen */
+  titlePosition?: "bottom-left" | "top-left" | "bottom-right" | "center-right";
+  /** Color del título (sport wear usa oscuro sobre fondo claro) */
+  titleColor?: "light" | "dark";
+  /** Proporción del tile en el grid */
+  aspect?: "square" | "wide";
   row: "top" | "bottom";
-  /** Columnas en fila inferior (grid de 4) */
-  bottomColSpan?: 1 | 3;
+  /** Columnas en fila inferior (grid de 4 → 1 + 2 + 1) */
+  bottomColSpan?: 1 | 2;
 };
 
 export const HOME_CATEGORY_TILES: CategoryTile[] = [
@@ -30,21 +35,26 @@ export const HOME_CATEGORY_TILES: CategoryTile[] = [
     row: "top",
   },
   {
-    id: "polerones",
-    title: "POLERONES",
-    href: "/productos?categoria=mujer-polerones",
-    imageSrc: "/images/categories/polerones.webp",
-    imageAlt: "Polerones reuso",
+    id: "ninos",
+    title: "NIÑOS",
+    href: "/productos?genero=NINO",
+    imageSrc: "/images/categories/ninos.webp",
+    imageAlt: "Colección niños reuso",
     row: "top",
   },
   {
-    id: "bolsos",
-    title: "BOLSOS",
-    href: "/productos?categoria=mujer-carteras",
-    imageSrc: "/images/categories/bolsos.webp",
-    imageAlt: "Bolsos y carteras reuso",
+    id: "sport-wear",
+    title: "SPORT WEAR",
+    titleLines: ["SPORT", "WEAR"],
+    href: "/productos?categoria=ropa-deportiva&genero=UNISEX",
+    imageSrc: "/images/categories/sport-wear.webp",
+    imageAlt: "Ropa deportiva reuso",
+    titleAlign: "left",
+    titlePosition: "top-left",
+    titleColor: "dark",
     row: "bottom",
     bottomColSpan: 1,
+    aspect: "square",
   },
   {
     id: "footwear",
@@ -54,7 +64,19 @@ export const HOME_CATEGORY_TILES: CategoryTile[] = [
     imageSrc: "/images/categories/footwear.webp",
     imageAlt: "Calzado reuso",
     titleAlign: "right",
+    titlePosition: "center-right",
     row: "bottom",
-    bottomColSpan: 3,
+    bottomColSpan: 2,
+    aspect: "wide",
+  },
+  {
+    id: "bolsos",
+    title: "BOLSOS",
+    href: "/productos?categoria=mujer-carteras",
+    imageSrc: "/images/categories/bolsos.webp",
+    imageAlt: "Bolsos y carteras reuso",
+    row: "bottom",
+    bottomColSpan: 1,
+    aspect: "square",
   },
 ];

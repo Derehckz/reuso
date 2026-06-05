@@ -53,7 +53,7 @@ async function loadHomeTilesFromDatabase() {
   const categories = await prisma.category.findMany({
     where: {
       ...activeCategory,
-      slug: { in: ["mujer", "hombre"] },
+      slug: { in: ["mujer", "hombre", "ropa-deportiva"] },
     },
     select: { slug: true, image: true, bannerImage: true },
   });
@@ -74,8 +74,10 @@ async function loadHomeTilesFromDatabase() {
   );
 
   return HOME_CATEGORY_TILES.map((tile) => {
-    const imageFromCategory = categoryImage.get(tile.id);
     const categoryFromHref = tile.href.split("categoria=")[1]?.split("&")[0];
+    const imageFromCategory = categoryFromHref
+      ? categoryImage.get(categoryFromHref)
+      : null;
     const imageFromSubcategory = categoryFromHref
       ? subcategoryImage.get(categoryFromHref)
       : null;

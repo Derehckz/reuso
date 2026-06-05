@@ -2,38 +2,38 @@ import { CATALOG_CATEGORY_HERO } from "@/lib/media/catalog-category-hero";
 
 /** Presets de imagen para el grid de categorías en el home (re-uso.cl). */
 export const HOME_CATEGORY_TILE_SPECS = {
-  /** Fila superior: MUJER, HOMBRE, POLERONES */
+  /** Fila superior: MUJER, HOMBRE, NIÑOS */
   top: {
-    width: 1000,
-    height: 1000,
-    label: "1000 × 1000 px",
+    width: 800,
+    height: 800,
+    label: "800 × 800 px",
     ratio: "1:1",
     adminAspect: "square" as const,
-    hint: "Fila superior del home. Foto vertical con espacio alrededor del modelo (no macro). Formato cuadrado.",
+    hint: "Fila superior del home (3 columnas). Cuadrada, con margen alrededor del sujeto.",
   },
-  /** Fila inferior izquierda: BOLSOS / carteras */
+  /** Fila inferior lateral: SPORT WEAR o BOLSOS */
   bottomNarrow: {
-    width: 600,
+    width: 800,
     height: 800,
-    label: "600 × 800 px",
-    ratio: "3:4",
+    label: "800 × 800 px",
+    ratio: "1:1",
     adminAspect: "square" as const,
-    hint: "Columna estrecha del home (BOLSOS). Vertical 3:4, producto centrado.",
+    hint: "Columnas laterales del home (SPORT WEAR, BOLSOS). Cuadrada.",
   },
-  /** Fila inferior derecha: FOOT WEAR / zapatillas */
+  /** Fila inferior centro: FOOT WEAR */
   bottomWide: {
-    width: 1800,
+    width: 1200,
     height: 600,
-    label: "1800 × 600 px",
-    ratio: "3:1",
+    label: "1200 × 600 px",
+    ratio: "2:1",
     adminAspect: "categoryHero" as const,
-    hint: "Columna ancha del home (FOOT WEAR). Panorámica horizontal 3:1.",
+    hint: "Columna central ancha del home (FOOT WEAR). Horizontal 2:1.",
   },
 } as const;
 
 export type HomeCategoryTileSpecKey = keyof typeof HOME_CATEGORY_TILE_SPECS;
 
-const TOP_SLUGS = new Set(["mujer", "hombre", "ropa-deportiva"]);
+const TOP_SLUGS = new Set(["mujer", "hombre"]);
 const TOP_SUB_SUFFIXES = ["-polerones"];
 
 const NARROW_SLUGS = new Set(["mujer-carteras"]);
@@ -41,6 +41,7 @@ const WIDE_SLUGS = new Set(["mujer-zapatillas", "hombre-zapatillas"]);
 
 /** Qué preset de imagen usar en admin según slug de categoría/subcategoría. */
 export function homeTileSpecForSlug(slug: string): HomeCategoryTileSpecKey {
+  if (slug === "ropa-deportiva") return "bottomNarrow";
   if (NARROW_SLUGS.has(slug)) return "bottomNarrow";
   if (WIDE_SLUGS.has(slug)) return "bottomWide";
   if (TOP_SLUGS.has(slug)) return "top";
