@@ -1,12 +1,15 @@
 export type CategoryTile = {
   id: string;
   title: string;
+  /** Título en dos líneas (ej. FOOT + WEAR) */
+  titleLines?: [string, string];
   href: string;
   imageSrc: string;
   imageAlt: string;
-  /** Alineación del título en tiles anchos */
   titleAlign?: "left" | "right";
   row: "top" | "bottom";
+  /** Columnas en fila inferior (grid de 4) */
+  bottomColSpan?: 1 | 3;
 };
 
 export const HOME_CATEGORY_TILES: CategoryTile[] = [
@@ -27,28 +30,31 @@ export const HOME_CATEGORY_TILES: CategoryTile[] = [
     row: "top",
   },
   {
-    id: "ropa-deportiva",
-    title: "ROPA DEPORTIVA",
-    href: "/productos?categoria=ropa-deportiva&genero=UNISEX",
-    imageSrc: "/images/categories/nino.webp",
-    imageAlt: "Ropa deportiva reuso",
+    id: "polerones",
+    title: "POLERONES",
+    href: "/productos?categoria=mujer-polerones",
+    imageSrc: "/images/categories/polerones.webp",
+    imageAlt: "Polerones reuso",
     row: "top",
   },
   {
-    id: "carteras",
-    title: "CARTERAS",
+    id: "bolsos",
+    title: "BOLSOS",
     href: "/productos?categoria=mujer-carteras",
-    imageSrc: "/images/categories/carteras.webp",
-    imageAlt: "Carteras reuso",
+    imageSrc: "/images/categories/bolsos.webp",
+    imageAlt: "Bolsos y carteras reuso",
     row: "bottom",
+    bottomColSpan: 1,
   },
   {
-    id: "zapatillas",
-    title: "ZAPATILLAS",
-    href: "/productos?categoria=mujer-zapatillas",
+    id: "footwear",
+    title: "FOOT WEAR",
+    titleLines: ["FOOT", "WEAR"],
+    href: "/productos?categoria=hombre-zapatillas",
     imageSrc: "/images/categories/footwear.webp",
-    imageAlt: "Zapatillas reuso",
+    imageAlt: "Calzado reuso",
     titleAlign: "right",
     row: "bottom",
+    bottomColSpan: 3,
   },
 ];

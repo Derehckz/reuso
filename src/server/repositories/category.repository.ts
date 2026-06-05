@@ -53,7 +53,7 @@ async function loadHomeTilesFromDatabase() {
   const categories = await prisma.category.findMany({
     where: {
       ...activeCategory,
-      slug: { in: ["mujer", "hombre", "ropa-deportiva"] },
+      slug: { in: ["mujer", "hombre"] },
     },
     select: { slug: true, image: true, bannerImage: true },
   });
@@ -61,7 +61,7 @@ async function loadHomeTilesFromDatabase() {
   const subcategories = await prisma.subcategory.findMany({
     where: {
       ...activeSubcategory,
-      slug: { in: ["mujer-carteras", "mujer-zapatillas"] },
+      slug: { in: ["mujer-polerones", "mujer-carteras", "hombre-zapatillas"] },
     },
     select: { slug: true, image: true, bannerImage: true },
   });

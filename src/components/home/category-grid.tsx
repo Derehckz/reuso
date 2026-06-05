@@ -6,25 +6,27 @@ import { categoryRepository } from "@/server/repositories/category.repository";
 
 function CategoryTileCard({
   title,
+  titleLines,
   href,
   imageSrc,
   imageAlt,
   titleAlign = "left",
-  aspectClass,
+  className,
 }: {
   title: string;
+  titleLines?: [string, string];
   href: string;
   imageSrc: string;
   imageAlt: string;
   titleAlign?: "left" | "right";
-  aspectClass: string;
+  className?: string;
 }) {
   return (
     <Link
       href={href}
       className={cn(
-        "group relative block overflow-hidden bg-neutral-900",
-        aspectClass,
+        "group relative block h-full min-h-[220px] overflow-hidden bg-neutral-900",
+        className,
       )}
     >
       <Image
@@ -32,22 +34,39 @@ function CategoryTileCard({
         alt={imageAlt}
         fill
         unoptimized
-        sizes="(max-width: 768px) 100vw, 33vw"
-        className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+        sizes="(max-width: 640px) 100vw, 33vw"
+        className="object-cover transition-transform duration-700 ease-out will-change-transform group-hover:scale-110"
       />
       <div
-        className="absolute inset-0 z-[1] bg-gradient-to-t from-black/65 via-black/25 to-black/10"
+        className="absolute inset-0 z-[1] bg-gradient-to-t from-black/70 via-black/20 to-black/5 transition-opacity duration-500 group-hover:from-black/75"
         aria-hidden
       />
       <ModaCircularBadge />
-      <span
-        className={cn(
-          "font-editorial absolute bottom-5 text-4xl leading-none tracking-tight text-white md:bottom-6 md:text-5xl lg:text-6xl",
-          titleAlign === "right" ? "right-5 md:right-8" : "left-5 md:left-8",
-        )}
-      >
-        {title}
-      </span>
+      {titleLines ? (
+        <span
+          className={cn(
+            "font-editorial absolute bottom-5 flex flex-col gap-0 leading-[0.9] tracking-tight text-white md:bottom-6",
+            titleAlign === "right"
+              ? "right-5 items-end md:right-10"
+              : "left-5 md:left-8",
+          )}
+        >
+          {titleLines.map((line) => (
+            <span key={line} className="text-4xl md:text-5xl lg:text-6xl">
+              {line}
+            </span>
+          ))}
+        </span>
+      ) : (
+        <span
+          className={cn(
+            "font-editorial absolute bottom-5 text-4xl leading-none tracking-tight text-white md:bottom-6 md:text-5xl lg:text-6xl",
+            titleAlign === "right" ? "right-5 md:right-8" : "left-5 md:left-8",
+          )}
+        >
+          {title}
+        </span>
+      )}
     </Link>
   );
 }
@@ -64,23 +83,30 @@ export async function CategoryGrid() {
           <CategoryTileCard
             key={tile.id}
             title={tile.title}
-            href={tile.href}
-            imageSrc={tile.imageSrc}
-            imageAlt={tile.imageAlt}
-            aspectClass="aspect-[4/5] sm:aspect-[3/4]"
-          />
-        ))}
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2">
-        {bottomTiles.map((tile) => (
-          <CategoryTileCard
-            key={tile.id}
-            title={tile.title}
+            titleLines={tile.titleLines}
             href={tile.href}
             imageSrc={tile.imageSrc}
             imageAlt={tile.imageAlt}
             titleAlign={tile.titleAlign}
-            aspectClass="aspect-[16/10] sm:aspect-[2/1]"
+            className="aspect-square sm:aspect-[4/5] lg:aspect-square"
+          />
+        ))}
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-4">
+        {bottomTiles.map((tile) => (
+          <CategoryTileCard
+            key={tile.id}
+            title={tile.title}
+            titleLines={tile.titleLines}
+            href={tile.href}
+            imageSrc={tile.imageSrc}
+            imageAlt={tile.imageAlt}
+            titleAlign={tile.titleAlign}
+            className={cn(
+              tile.bottomColSpan === 3
+                ? "aspect-[21/9] sm:col-span-3 sm:aspect-[3/1]"
+                : "aspect-[4/5] sm:col-span-1 sm:aspect-[3/4]",
+            )}
           />
         ))}
       </div>
