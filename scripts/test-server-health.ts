@@ -18,7 +18,10 @@ import {
   isWebhookMisconfiguredInProduction,
   resetMercadoPagoClient,
 } from "../src/lib/mercadopago";
-import { loadMercadoPagoConfig } from "../src/modules/integrations/mercadopago";
+import {
+  getResolvedMercadoPagoConfig,
+  loadMercadoPagoConfig,
+} from "../src/modules/integrations/mercadopago";
 import { isBluexpressConfigured } from "../src/lib/bluexpress/config";
 import { loadBlueExpressConfig } from "../src/modules/integrations/blueexpress";
 
@@ -176,26 +179,29 @@ async function checkMercadoPago(): Promise<CheckResult[]> {
 
   if (!accessToken) return results;
 
-  const envAligned =
-    (kind === "TEST" && envVar !== "production") ||
-    (kind === "APP_USR" && envVar !== "sandbox") ||
-    kind === "otro";
+  const effectiveEnv = getResolvedMercadoPagoConfig().environment;
+  const envVarMismatch =
+    (kind === "TEST" && envVar === "production") ||
+    (kind === "APP_USR" && envVar === "sandbox");
 
   results.push({
-    name: "Mercado Pago — entorno vs token",
-    ok: envAligned,
-    detail:
-      kind === "TEST"
-        ? `Token TEST- → sandbox. MERCADOPAGO_ENV=${envVar}`
-        : kind === "APP_USR"
-          ? `Token APP_USR- → production. MERCADOPAGO_ENV=${envVar}${
-              envVar === "sandbox"
-                ? " (¡mezcla! usa production o credenciales TEST-)"
-                : ""
-            }`
-          : `Prefijo desconocido. MERCADOPAGO_ENV=${envVar}`,
+    name: "Mercado Pago — entorno efectivo",
+    ok: true,
+    detail: `${effectiveEnv} (token ${kind}, el código ignora MERCADOPAGO_ENV si no coincide)`,
     critical: true,
   });
+
+  if (envVarMismatch) {
+    results.push({
+      name: "Mercado Pago — MERCADOPAGO_ENV en .env",
+      ok: false,
+      detail:
+        kind === "APP_USR"
+          ? `Tienes MERCADOPAGO_ENV=sandbox pero token APP_USR- → cambia a production en .env`
+          : `Tienes MERCADOPAGO_ENV=production pero token TEST- → cambia a sandbox en .env`,
+      critical: false,
+    });
+  }
 
   results.push({
     name: "Mercado Pago — Public Key",
