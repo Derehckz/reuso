@@ -146,6 +146,23 @@ Seed: `admin@reuso.cl` / `Admin123!` — cambiar en staging.
 
 Webhook: `https://reuso.dpcoding.cl/api/webhooks/mercadopago`
 
+### Verificar que todo funciona (healthcheck)
+
+En el VPS, tras configurar `.env` y reiniciar PM2:
+
+```bash
+cd /var/www/reuso
+npm run healthcheck
+# o con URL explícita:
+npm run healthcheck -- --url https://reuso.dpcoding.cl
+```
+
+Comprueba: PostgreSQL, variables de entorno, token Mercado Pago (`users/me`), preferencia de prueba, webhook HTTP y que la tienda responda.
+
+Códigos de salida: `0` = OK · `1` = fallo crítico · `2` = advertencias opcionales.
+
+Solo envíos Blue Express: `npm run bluexpress:test`
+
 ## 8. Cron (órdenes sin pago)
 
 ```cron

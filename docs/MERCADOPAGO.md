@@ -49,8 +49,18 @@ Para desarrollo local usa [ngrok](https://ngrok.com/) o similar; MP debe poder a
 
 Ver documentación oficial de MercadoPago para tarjetas y estados (aprobado, rechazado, pendiente).
 
+## Verificación en el servidor
+
+```bash
+cd /var/www/reuso
+npm run healthcheck -- --url https://reuso.dpcoding.cl
+```
+
+Valida token MP (`users/me`), crea una preferencia de prueba, comprueba el webhook y la BD. Ver `docs/DEPLOY-VPS.md` §7.
+
 ## Código relevante
 
 - `src/lib/mercadopago/` — cliente, preferencias, firma webhook, mapeo estados
 - `src/server/services/payment.service.ts` — sincronización pago → orden
 - `src/app/api/webhooks/mercadopago/route.ts` — endpoint webhook
+- `scripts/test-server-health.ts` — healthcheck integral
