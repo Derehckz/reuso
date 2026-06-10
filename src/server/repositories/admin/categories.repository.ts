@@ -417,16 +417,16 @@ export async function softDeleteCategory(categoryId: string) {
 }
 
 export async function softDeleteCategoryWithSubs(categoryId: string) {
-  return prisma.$transaction([
-    prisma.subcategory.updateMany({
+  return prisma.$transaction(async (tx) => {
+    await tx.subcategory.updateMany({
       where: { categoryId },
       data: { deletedAt: new Date() },
-    }),
-    prisma.category.update({
+    });
+    return tx.category.update({
       where: { id: categoryId },
       data: { deletedAt: new Date(), isActive: false },
-    }),
-  ]);
+    });
+  });
 }
 
 export async function createSubcategoryRecord(
@@ -461,20 +461,22 @@ export async function reorderCategoryNodes(
   const categoryUpdates = items.filter((i) => i.type === "category");
   const subUpdates = items.filter((i) => i.type === "subcategory");
 
-  await prisma.$transaction([
-    ...categoryUpdates.map((item) =>
-      prisma.category.update({
+  if (categoryUpdates.length === 0 && subUpdates.length === 0) return;
+
+  await prisma.$transaction(async (tx) => {
+    for (const item of categoryUpdates) {
+      await tx.category.update({
         where: { id: item.id },
         data: { sortOrder: item.sortOrder },
-      }),
-    ),
-    ...subUpdates.map((item) =>
-      prisma.subcategory.update({
+      });
+    }
+    for (const item of subUpdates) {
+      await tx.subcategory.update({
         where: { id: item.id },
         data: { sortOrder: item.sortOrder },
-      }),
-    ),
-  ]);
+      });
+    }
+  });
 }
 
 export async function bulkSetActive(
@@ -485,32 +487,32 @@ export async function bulkSetActive(
   const categoryIds = items.filter((i) => i.type === "category").map((i) => i.id);
   const subIds = items.filter((i) => i.type === "subcategory").map((i) => i.id);
 
-  await prisma.$transaction([
-    ...(categoryIds.length > 0
-      ? [
-          prisma.category.updateMany({
-            where: { id: { in: categoryIds } },
-            data: { isActive },
-          }),
-        ]
-      : []),
-    ...(subIds.length > 0
-      ? [
-          prisma.subcategory.updateMany({
-            where: { id: { in: subIds } },
-            data: { isActive },
-          }),
-        ]
-      : []),
-    ...(cascadeChildren && !isActive && categoryIds.length > 0
-      ? [
-          prisma.subcategory.updateMany({
-            where: { categoryId: { in: categoryIds }, deletedAt: null },
-            data: { isActive: false },
-          }),
-        ]
-      : []),
-  ]);
+  const hasWork =
+    categoryIds.length > 0 ||
+    subIds.length > 0 ||
+    (cascadeChildren && !isActive && categoryIds.length > 0);
+  if (!hasWork) return;
+
+  await prisma.$transaction(async (tx) => {
+    if (categoryIds.length > 0) {
+      await tx.category.updateMany({
+        where: { id: { in: categoryIds } },
+        data: { isActive },
+      });
+    }
+    if (subIds.length > 0) {
+      await tx.subcategory.updateMany({
+        where: { id: { in: subIds } },
+        data: { isActive },
+      });
+    }
+    if (cascadeChildren && !isActive && categoryIds.length > 0) {
+      await tx.subcategory.updateMany({
+        where: { categoryId: { in: categoryIds }, deletedAt: null },
+        data: { isActive: false },
+      });
+    }
+  });
 }
 
 export async function getCategorySeoBySlug(slug: string) {

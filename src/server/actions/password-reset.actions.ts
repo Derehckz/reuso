@@ -125,15 +125,15 @@ export async function resetPasswordWithToken(
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
-  await prisma.$transaction([
-    prisma.user.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
       where: { id: row.userId },
       data: { passwordHash },
-    }),
-    prisma.passwordResetToken.deleteMany({
+    });
+    await tx.passwordResetToken.deleteMany({
       where: { userId: row.userId },
-    }),
-  ]);
+    });
+  });
 
   return {
     success: true,

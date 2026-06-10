@@ -19,19 +19,17 @@ export const wishlistRepository = {
       create: { userId },
     });
 
-    await prisma.$transaction([
-      prisma.wishlistItem.deleteMany({ where: { wishlistId: wishlist.id } }),
-      ...(productIds.length > 0
-        ? [
-            prisma.wishlistItem.createMany({
-              data: productIds.map((productId) => ({
-                wishlistId: wishlist.id,
-                productId,
-              })),
-              skipDuplicates: true,
-            }),
-          ]
-        : []),
-    ]);
+    await prisma.$transaction(async (tx) => {
+      await tx.wishlistItem.deleteMany({ where: { wishlistId: wishlist.id } });
+      if (productIds.length > 0) {
+        await tx.wishlistItem.createMany({
+          data: productIds.map((productId) => ({
+            wishlistId: wishlist.id,
+            productId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    });
   },
 };

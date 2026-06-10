@@ -50,21 +50,19 @@ export const cartRepository = {
   },
 
   async replaceItems(cartId: string, items: CartItemInput[]) {
-    await prisma.$transaction([
-      prisma.cartItem.deleteMany({ where: { cartId } }),
-      ...(items.length > 0
-        ? [
-            prisma.cartItem.createMany({
-              data: items.map((i) => ({
-                cartId,
-                productId: i.productId,
-                variantId: i.variantId,
-                quantity: i.quantity,
-              })),
-            }),
-          ]
-        : []),
-    ]);
+    await prisma.$transaction(async (tx) => {
+      await tx.cartItem.deleteMany({ where: { cartId } });
+      if (items.length > 0) {
+        await tx.cartItem.createMany({
+          data: items.map((i) => ({
+            cartId,
+            productId: i.productId,
+            variantId: i.variantId,
+            quantity: i.quantity,
+          })),
+        });
+      }
+    });
   },
 
   async mergeGuestIntoUser(guestCartId: string, userCartId: string) {
