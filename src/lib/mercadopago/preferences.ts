@@ -2,8 +2,8 @@ import { Preference } from "mercadopago";
 import { absoluteUrl } from "@/lib/utils";
 import { getMercadoPagoClient } from "./client";
 import {
+  buildPayerForPreference,
   getMercadoPagoEnvironment,
-  resolvePayerEmailForCheckout,
 } from "./config";
 import { toMercadoPagoError } from "./errors";
 
@@ -65,6 +65,11 @@ export async function createCheckoutPreference(params: {
     );
   }
 
+  const payer = buildPayerForPreference({
+    payerEmail: params.payerEmail,
+    payerName: params.payerName,
+  });
+
   try {
     const result = await preference.create({
       body: {
@@ -76,10 +81,7 @@ export async function createCheckoutPreference(params: {
           unit_price: item.unit_price,
           currency_id: "CLP",
         })),
-        payer: {
-          email: resolvePayerEmailForCheckout(params.payerEmail),
-          name: params.payerName,
-        },
+        ...(payer ? { payer } : {}),
         back_urls: {
           success: absoluteUrl(`/checkout/exito?order=${params.orderNumber}`),
           failure: absoluteUrl(`/checkout/error?order=${params.orderNumber}`),

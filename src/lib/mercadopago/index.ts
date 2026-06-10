@@ -2,7 +2,7 @@ export {
   getMercadoPagoEnvironment,
   getMercadoPagoPublicKey,
   getMercadoPagoSandboxPayerEmail,
-  resolvePayerEmailForCheckout,
+  buildPayerForPreference,
   getMercadoPagoWebhookSecret,
   isMercadoPagoConfigured,
   shouldEnforceWebhookSignature,

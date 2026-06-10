@@ -280,11 +280,11 @@ async function checkMercadoPago(): Promise<CheckResult[]> {
   if (effectiveEnv === "sandbox") {
     const sandboxPayer = process.env.MERCADOPAGO_SANDBOX_PAYER_EMAIL?.trim();
     results.push({
-      name: "Mercado Pago — comprador sandbox",
-      ok: Boolean(sandboxPayer),
+      name: "Mercado Pago — payer en preferencia (sandbox)",
+      ok: true,
       detail: sandboxPayer
-        ? `MERCADOPAGO_SANDBOX_PAYER_EMAIL configurado`
-        : "Falta MERCADOPAGO_SANDBOX_PAYER_EMAIL (email del comprador de prueba) — riesgo de bucle en /login/",
+        ? `Se enviará payer.email=${sandboxPayer.slice(0, 12)}…`
+        : "Sin payer en preferencia (recomendado para evitar bucle /login/)",
       critical: false,
     });
   }

@@ -39,11 +39,20 @@ export function getMercadoPagoSandboxPayerEmail(): string | null {
   return email || null;
 }
 
-export function resolvePayerEmailForCheckout(customerEmail: string): string {
+/** En sandbox solo enviamos payer si hay email de comprador de prueba explícito. */
+export function buildPayerForPreference(params: {
+  payerEmail: string;
+  payerName?: string;
+}): { email: string; name?: string } | undefined {
   if (getMercadoPagoEnvironment() === "sandbox") {
-    return getMercadoPagoSandboxPayerEmail() ?? customerEmail;
+    const testEmail = getMercadoPagoSandboxPayerEmail();
+    if (!testEmail) return undefined;
+    return { email: testEmail };
   }
-  return customerEmail;
+  return {
+    email: params.payerEmail,
+    name: params.payerName,
+  };
 }
 
 export function shouldEnforceWebhookSignature(): boolean {

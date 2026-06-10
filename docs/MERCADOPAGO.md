@@ -66,30 +66,43 @@ Los avisos CSP / `requestStorageAccessFor` en la consola vienen del checkout de 
 
 ## Error `ERR_TOO_MANY_REDIRECTS` en sandbox.mercadopago.cl/login
 
-La URL correcta es `sandbox.mercadopago.cl`. El bucle en **`/login/`** casi siempre es:
+Te manda a `…/login/` **antes** de la tarjeta. Causa #1: reuso enviaba tu **email del checkout** en la preferencia y MP entra en bucle de login.
 
-1. **Cookies** de tu cuenta real de MP mezcladas con sandbox
-2. **Email del checkout** = tu email real → MP intenta login y entra en bucle
+### Paso 1 — deploy sin payer (recomendado)
 
-### Solución (orden recomendado)
+En `.env` del VPS:
 
-1. Panel MP → **Cuentas de prueba** → copia el **Comprador** (usuario, contraseña y email tipo `test_user_…@testuser.com`)
-2. En el VPS `.env`:
-   ```env
-   MERCADOPAGO_ENV=sandbox
-   MERCADOPAGO_SANDBOX_PAYER_EMAIL="test_user_XXXXX@testuser.com"
-   ```
-3. `pm2 restart reuso --update-env`
-4. **Ventana de incógnito** (o borra cookies de `mercadopago.cl` y `sandbox.mercadopago.cl`)
-5. Checkout **nuevo** en reuso (no reutilices links viejos de MP)
-6. En la pantalla de login de MP usa **usuario y contraseña del comprador de prueba** (no “entrar con tu cuenta” de MP real)
-7. Si pide verificación, usa el **código de 6 dígitos** que muestra el panel en Cuentas de prueba
-8. Tarjeta Mastercard: `5416 7526 0258 2580` · CVV `123` · `11/30` · titular **`APRO`** · doc `(otro) 123456789`
-9. Al terminar: botón **Volver al sitio**
+```env
+MERCADOPAGO_ENV=sandbox
+# Borra o comenta MERCADOPAGO_SANDBOX_PAYER_EMAIL
+```
 
-Si ves **«No se completó el pago»** en `/checkout/error`, Mercado Pago rechazó o no finalizó el cobro. La orden sigue en *Esperando pago* hasta que expire el cron (48 h) o la canceles en admin. Reintenta con titular **APRO** en incógnito.
+```bash
+git pull && npm run build && pm2 restart reuso --update-env
+```
 
-**No** inicies sesión antes en mercadopago.cl con tu cuenta personal.
+Checkout **nuevo** en incógnito. La preferencia ya no lleva email de comprador.
+
+### Paso 2 — si MP pide login
+
+Panel → **Cuentas de prueba** → **Comprador** (Chile): usuario, contraseña, **código 6 dígitos**.
+
+- Usa **solo** esas credenciales (no “entrar con tu cuenta” MP real)
+- Si sigue el bucle: crea una **aplicación** también para el comprador de prueba en el panel MP
+
+### Paso 3 — opcional, cuando el login funcione
+
+```env
+MERCADOPAGO_SANDBOX_PAYER_EMAIL="test_user_XXXXX@testuser.com"
+```
+
+Email **exacto** del comprador de prueba, no tu email personal.
+
+### Pago
+
+Tarjeta `5416 7526 0258 2580` · CVV `123` · `11/30` · titular **`APRO`** · o **Saldo en cuenta** en sandbox.
+
+Si ves **«No se completó el pago»** en `/checkout/error`, el cobro fue rechazado; la orden queda pendiente hasta cancelarla o `npm run orders:expire -- --hours 0`.
 
 ## Tarjetas de prueba (Chile)
 
