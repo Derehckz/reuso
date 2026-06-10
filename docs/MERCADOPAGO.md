@@ -64,6 +64,18 @@ Significa que vendedor y comprador no están en el mismo modo. Con credenciales 
 
 Los avisos CSP / `requestStorageAccessFor` en la consola vienen del checkout de Mercado Pago, no de reuso; se pueden ignorar.
 
+## Error `ERR_TOO_MANY_REDIRECTS` en sandbox.mercadopago.cl
+
+Suele ser sesión mezclada entre MP real y sandbox, o abrir `init_point` (producción) en lugar de `sandbox_init_point`.
+
+1. Cierra sesión en [mercadopago.cl](https://www.mercadopago.cl) y borra cookies de `mercadopago.cl` y `sandbox.mercadopago.cl`
+2. Abre **ventana de incógnito**
+3. Confirma `MERCADOPAGO_ENV=sandbox` y credenciales de **prueba**
+4. En el checkout MP, inicia sesión solo con el **comprador de prueba** del panel
+5. Tras pagar en sandbox, usa el botón **Volver al sitio** (en pruebas no hay auto-return)
+
+Tras cambios en `.env`: `pm2 restart reuso --update-env` y prueba un checkout nuevo (preferencia nueva).
+
 ## Tarjetas de prueba (Chile)
 
 Ver [tarjetas de prueba](https://www.mercadopago.cl/developers/es/docs/checkout-pro/additional-content/test-cards) en la documentación oficial.

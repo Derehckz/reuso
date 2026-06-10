@@ -25,7 +25,15 @@ export function resolveCheckoutUrl(preference: {
 }): string | undefined {
   const env = getMercadoPagoEnvironment();
   if (env === "sandbox") {
-    return preference.sandboxInitPoint ?? preference.initPoint ?? undefined;
+    // Nunca usar init_point en sandbox: redirige a mercadopago.com y provoca
+    // bucles con sandbox.mercadopago.cl si hay sesión mezclada.
+    const url = preference.sandboxInitPoint ?? undefined;
+    if (!url) {
+      throw new Error(
+        "Mercado Pago no devolvió sandbox_init_point. Verifica credenciales de prueba y MERCADOPAGO_ENV=sandbox.",
+      );
+    }
+    return url;
   }
   return preference.initPoint ?? preference.sandboxInitPoint ?? undefined;
 }
@@ -76,8 +84,11 @@ export async function createCheckoutPreference(params: {
             `/checkout/pendiente?order=${params.orderNumber}`,
           ),
         },
-        auto_return: "approved",
-        notification_url: absoluteUrl("/api/webhooks/mercadopago"),
+        // auto_return en sandbox suele provocar bucles de redirección en MP.
+        ...(env === "production" ? { auto_return: "approved" as const } : {}),
+        notification_url: absoluteUrl(
+          "/api/webhooks/mercadopago?source_news=webhooks",
+        ),
         statement_descriptor: "REUSO",
         expires: true,
         expiration_date_from: new Date().toISOString(),
