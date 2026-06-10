@@ -163,11 +163,46 @@ Códigos de salida: `0` = OK · `1` = fallo crítico · `2` = advertencias opcio
 
 Solo envíos Blue Express: `npm run bluexpress:test`
 
-## 8. Cron (órdenes sin pago)
+## 8. Órdenes «Esperando pago»
+
+Cuando el checkout redirige a Mercado Pago pero el pago no se completa:
+
+1. La orden queda en **`AWAITING_PAYMENT`**
+2. El **stock queda reservado** (no se vende a otro cliente)
+3. Tras **48 h** sin pago se **cancela sola** y se libera inventario (si el cron está activo)
+
+### Limpiar pruebas ahora (manual)
+
+En el VPS:
+
+```bash
+cd /var/www/reuso
+npm run orders:expire -- --hours 0   # cancela todas las pendientes
+# o solo las de más de 2 horas:
+npm run orders:expire -- --hours 2
+```
+
+También desde admin: `/admin/ordenes` → abrir orden → cambiar estado a **Cancelado**.
+
+### Automatizar (cron en el servidor)
+
+1. En `.env` define `CRON_SECRET` (mismo valor que usarás en crontab).
+2. Edita crontab del root: `crontab -e`
+3. Añade (cada 15 min, cancela órdenes > 48 h sin pago):
 
 ```cron
-*/15 * * * * curl -fsS -H "Authorization: Bearer TU_CRON_SECRET" https://reuso.dpcoding.cl/api/cron/expire-orders
+*/15 * * * * curl -fsS -H "Authorization: Bearer TU_CRON_SECRET" "https://reuso.dpcoding.cl/api/cron/expire-orders?hours=48"
 ```
+
+Probar el endpoint:
+
+```bash
+curl -s -H "Authorization: Bearer TU_CRON_SECRET" \
+  "https://reuso.dpcoding.cl/api/cron/expire-orders?hours=48"
+# → {"ok":true,"cancelled":0}
+```
+
+Cambiar el plazo: `?hours=24` (24 horas) u otro valor.
 
 ## 9. Actualizar código (cada push)
 

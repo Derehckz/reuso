@@ -23,6 +23,7 @@
     "import:woocommerce:dates": "tsx scripts/import-woocommerce.ts --sync-dates",
     "bluexpress:test": "tsx scripts/test-bluexpress.ts",
     "healthcheck": "tsx scripts/test-server-health.ts",
+    "orders:expire": "tsx scripts/expire-awaiting-orders.ts",
     "db:studio": "prisma studio",
     "postinstall": "prisma generate"
   },
