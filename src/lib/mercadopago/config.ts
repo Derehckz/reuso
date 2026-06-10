@@ -30,6 +30,22 @@ export function getMercadoPagoWebhookSecret(): string | null {
   return getResolvedMercadoPagoConfig().webhookSecret;
 }
 
+/**
+ * Email del comprador de prueba (panel MP → Cuentas de prueba → Comprador).
+ * En sandbox evita bucles en /login/ si el cliente puso su email real en checkout.
+ */
+export function getMercadoPagoSandboxPayerEmail(): string | null {
+  const email = process.env.MERCADOPAGO_SANDBOX_PAYER_EMAIL?.trim();
+  return email || null;
+}
+
+export function resolvePayerEmailForCheckout(customerEmail: string): string {
+  if (getMercadoPagoEnvironment() === "sandbox") {
+    return getMercadoPagoSandboxPayerEmail() ?? customerEmail;
+  }
+  return customerEmail;
+}
+
 export function shouldEnforceWebhookSignature(): boolean {
   return Boolean(getMercadoPagoWebhookSecret());
 }

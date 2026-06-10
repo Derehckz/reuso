@@ -277,6 +277,18 @@ async function checkMercadoPago(): Promise<CheckResult[]> {
     });
   }
 
+  if (effectiveEnv === "sandbox") {
+    const sandboxPayer = process.env.MERCADOPAGO_SANDBOX_PAYER_EMAIL?.trim();
+    results.push({
+      name: "Mercado Pago — comprador sandbox",
+      ok: Boolean(sandboxPayer),
+      detail: sandboxPayer
+        ? `MERCADOPAGO_SANDBOX_PAYER_EMAIL configurado`
+        : "Falta MERCADOPAGO_SANDBOX_PAYER_EMAIL (email del comprador de prueba) — riesgo de bucle en /login/",
+      critical: false,
+    });
+  }
+
   if (!isMercadoPagoConfigured()) {
     results.push({
       name: "Mercado Pago — checkout",

@@ -8,6 +8,7 @@ import { getCheckoutSuccessCopy } from "@/lib/checkout/success-messaging";
 import { verifyOrderAccessToken } from "@/lib/order-access-token";
 import { cn, formatPrice } from "@/lib/utils";
 import { orderRepository } from "@/server/repositories/order.repository";
+import { syncOrderFromMercadoPagoReturn } from "@/server/services/checkout-return.service";
 import { CheckCircle, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -16,11 +17,16 @@ export const metadata: Metadata = {
 };
 
 type PageProps = {
-  searchParams: Promise<{ order?: string; token?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 export default async function CheckoutSuccessPage({ searchParams }: PageProps) {
-  const { order: orderNumber, token } = await searchParams;
+  const params = await searchParams;
+  const orderNumber =
+    typeof params.order === "string" ? params.order : undefined;
+  const token = typeof params.token === "string" ? params.token : undefined;
+
+  await syncOrderFromMercadoPagoReturn(params);
 
   if (!orderNumber) {
     return (

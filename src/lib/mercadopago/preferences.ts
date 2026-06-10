@@ -1,7 +1,10 @@
 import { Preference } from "mercadopago";
 import { absoluteUrl } from "@/lib/utils";
 import { getMercadoPagoClient } from "./client";
-import { getMercadoPagoEnvironment } from "./config";
+import {
+  getMercadoPagoEnvironment,
+  resolvePayerEmailForCheckout,
+} from "./config";
 import { toMercadoPagoError } from "./errors";
 
 export type CheckoutItem = {
@@ -74,7 +77,7 @@ export async function createCheckoutPreference(params: {
           currency_id: "CLP",
         })),
         payer: {
-          email: params.payerEmail,
+          email: resolvePayerEmailForCheckout(params.payerEmail),
           name: params.payerName,
         },
         back_urls: {

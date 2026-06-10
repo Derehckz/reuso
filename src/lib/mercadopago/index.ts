@@ -1,6 +1,8 @@
 export {
   getMercadoPagoEnvironment,
   getMercadoPagoPublicKey,
+  getMercadoPagoSandboxPayerEmail,
+  resolvePayerEmailForCheckout,
   getMercadoPagoWebhookSecret,
   isMercadoPagoConfigured,
   shouldEnforceWebhookSignature,
@@ -31,6 +33,11 @@ export {
   orderStatusFromPaymentLabel,
   type MercadoPagoPaymentStatus,
 } from "./payment-status";
+
+export {
+  parseMercadoPagoReturnParams,
+  type MercadoPagoReturnParams,
+} from "./return-params";
 
 export {
   verifyMercadoPagoWebhookSignature,

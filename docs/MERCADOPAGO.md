@@ -64,17 +64,32 @@ Significa que vendedor y comprador no están en el mismo modo. Con credenciales 
 
 Los avisos CSP / `requestStorageAccessFor` en la consola vienen del checkout de Mercado Pago, no de reuso; se pueden ignorar.
 
-## Error `ERR_TOO_MANY_REDIRECTS` en sandbox.mercadopago.cl
+## Error `ERR_TOO_MANY_REDIRECTS` en sandbox.mercadopago.cl/login
 
-Suele ser sesión mezclada entre MP real y sandbox, o abrir `init_point` (producción) en lugar de `sandbox_init_point`.
+La URL correcta es `sandbox.mercadopago.cl`. El bucle en **`/login/`** casi siempre es:
 
-1. Cierra sesión en [mercadopago.cl](https://www.mercadopago.cl) y borra cookies de `mercadopago.cl` y `sandbox.mercadopago.cl`
-2. Abre **ventana de incógnito**
-3. Confirma `MERCADOPAGO_ENV=sandbox` y credenciales de **prueba**
-4. En el checkout MP, inicia sesión solo con el **comprador de prueba** del panel
-5. Tras pagar en sandbox, usa el botón **Volver al sitio** (en pruebas no hay auto-return)
+1. **Cookies** de tu cuenta real de MP mezcladas con sandbox
+2. **Email del checkout** = tu email real → MP intenta login y entra en bucle
 
-Tras cambios en `.env`: `pm2 restart reuso --update-env` y prueba un checkout nuevo (preferencia nueva).
+### Solución (orden recomendado)
+
+1. Panel MP → **Cuentas de prueba** → copia el **Comprador** (usuario, contraseña y email tipo `test_user_…@testuser.com`)
+2. En el VPS `.env`:
+   ```env
+   MERCADOPAGO_ENV=sandbox
+   MERCADOPAGO_SANDBOX_PAYER_EMAIL="test_user_XXXXX@testuser.com"
+   ```
+3. `pm2 restart reuso --update-env`
+4. **Ventana de incógnito** (o borra cookies de `mercadopago.cl` y `sandbox.mercadopago.cl`)
+5. Checkout **nuevo** en reuso (no reutilices links viejos de MP)
+6. En la pantalla de login de MP usa **usuario y contraseña del comprador de prueba** (no “entrar con tu cuenta” de MP real)
+7. Si pide verificación, usa el **código de 6 dígitos** que muestra el panel en Cuentas de prueba
+8. Tarjeta Mastercard: `5416 7526 0258 2580` · CVV `123` · `11/30` · titular **`APRO`** · doc `(otro) 123456789`
+9. Al terminar: botón **Volver al sitio**
+
+Si ves **«No se completó el pago»** en `/checkout/error`, Mercado Pago rechazó o no finalizó el cobro. La orden sigue en *Esperando pago* hasta que expire el cron (48 h) o la canceles en admin. Reintenta con titular **APRO** en incógnito.
+
+**No** inicies sesión antes en mercadopago.cl con tu cuenta personal.
 
 ## Tarjetas de prueba (Chile)
 
