@@ -180,25 +180,29 @@ async function checkMercadoPago(): Promise<CheckResult[]> {
   if (!accessToken) return results;
 
   const effectiveEnv = getResolvedMercadoPagoConfig().environment;
-  const envVarMismatch =
-    (kind === "TEST" && envVar === "production") ||
-    (kind === "APP_USR" && envVar === "sandbox");
 
   results.push({
     name: "Mercado Pago — entorno efectivo",
     ok: true,
-    detail: `${effectiveEnv} (token ${kind}, el código ignora MERCADOPAGO_ENV si no coincide)`,
+    detail: `${effectiveEnv} · MERCADOPAGO_ENV=${envVar} · token ${kind}`,
     critical: true,
   });
 
-  if (envVarMismatch) {
+  if (kind === "TEST" && envVar === "production") {
     results.push({
-      name: "Mercado Pago — MERCADOPAGO_ENV en .env",
+      name: "Mercado Pago — MERCADOPAGO_ENV",
       ok: false,
+      detail: "Token TEST- con MERCADOPAGO_ENV=production → usa sandbox",
+      critical: false,
+    });
+  }
+
+  if (kind === "APP_USR" && envVar === "production") {
+    results.push({
+      name: "Mercado Pago — credenciales de prueba Chile",
+      ok: true,
       detail:
-        kind === "APP_USR"
-          ? `Tienes MERCADOPAGO_ENV=sandbox pero token APP_USR- → cambia a production en .env`
-          : `Tienes MERCADOPAGO_ENV=production pero token TEST- → cambia a sandbox en .env`,
+        "Si users/me muestra TESTUSER…, usa MERCADOPAGO_ENV=sandbox aunque el token sea APP_USR-",
       critical: false,
     });
   }
@@ -243,14 +247,27 @@ async function checkMercadoPago(): Promise<CheckResult[]> {
       message?: string;
     };
 
+    const nickname = body.nickname ?? "";
+    const isTestSeller = /testuser/i.test(nickname);
+
     results.push({
       name: "Mercado Pago — API (users/me)",
       ok: res.ok,
       detail: res.ok
-        ? `Cuenta MP id=${body.id ?? "?"} · ${body.nickname ?? "OK"}`
+        ? `Cuenta MP id=${body.id ?? "?"} · ${nickname || "OK"}`
         : `HTTP ${res.status}: ${body.message ?? JSON.stringify(body).slice(0, 120)}`,
       critical: true,
     });
+
+    if (res.ok && isTestSeller && effectiveEnv !== "sandbox") {
+      results.push({
+        name: "Mercado Pago — vendedor de prueba",
+        ok: false,
+        detail:
+          "Cuenta TESTUSER con entorno production → pon MERCADOPAGO_ENV=sandbox en .env",
+        critical: true,
+      });
+    }
   } catch (error) {
     results.push({
       name: "Mercado Pago — API (users/me)",

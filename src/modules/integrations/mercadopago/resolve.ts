@@ -30,18 +30,22 @@ function resolveEnvironment(
   stored: MercadoPagoStoredConfig,
   accessToken: string | null,
 ): MercadoPagoEnvironment {
-  const inferred = inferEnvironmentFromToken(accessToken);
-  const explicitEnv = process.env.MERCADOPAGO_ENV?.toLowerCase();
-
-  // El prefijo del token manda: mezclar APP_USR- + sandbox rompe el checkout en MP.
+  // Token TEST- siempre es sandbox.
   if (accessToken?.startsWith("TEST-")) return "sandbox";
-  if (accessToken?.startsWith("APP_USR-")) return "production";
 
+  // Chile: credenciales de prueba suelen ser APP_USR- + cuenta TESTUSER…
+  // MERCADOPAGO_ENV=sandbox fuerza sandbox_init_point (necesario para pagar en prueba).
+  const explicitEnv = process.env.MERCADOPAGO_ENV?.toLowerCase();
   if (explicitEnv === "sandbox" || explicitEnv === "production") {
     return explicitEnv;
   }
+
   if (stored.environment) return stored.environment;
-  return inferred;
+
+  // APP_USR- sin override → producción (cobro real).
+  if (accessToken?.startsWith("APP_USR-")) return "production";
+
+  return inferEnvironmentFromToken(accessToken);
 }
 
 export function resolveMercadoPagoFromEnvOnly(): ResolvedMercadoPagoConfig {

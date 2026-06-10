@@ -6,8 +6,8 @@ Integración con **Checkout Pro** (preferencias + redirect + webhooks).
 
 | Variable | Descripción |
 |----------|-------------|
-| `MERCADOPAGO_ENV` | `sandbox` o `production`. Si no se define, se infiere por prefijo `TEST-` del token. |
-| `MERCADOPAGO_ACCESS_TOKEN` | Access token de la aplicación (TEST- en sandbox, APP_USR- en producción). |
+| `MERCADOPAGO_ENV` | `sandbox` o `production`. Con credenciales de **prueba** en Chile (cuenta `TESTUSER…`, token `APP_USR-`) usa **`sandbox`**. |
+| `MERCADOPAGO_ACCESS_TOKEN` | Access token de la aplicación. Prueba: `TEST-` o `APP_USR-` del panel *Credenciales de prueba*. |
 | `MERCADOPAGO_PUBLIC_KEY` | Public key (opcional, para Bricks futuros). |
 | `MERCADOPAGO_WEBHOOK_SECRET` | Firma secreta del panel **Webhooks** (obligatoria en producción). |
 
@@ -42,12 +42,31 @@ Para desarrollo local usa [ngrok](https://ngrok.com/) o similar; MP debe poder a
 
 ## Sandbox vs producción
 
-- **Sandbox**: token `TEST-`, checkout en `sandbox_init_point`, pagos con [usuarios de prueba](https://www.mercadopago.cl/developers/es/docs/checkout-pro/additional-content/test-users).
-- **Producción**: token `APP_USR-`, `init_point` de producción, webhooks con firma obligatoria.
+- **Sandbox (pruebas en Chile)**:
+  - `MERCADOPAGO_ENV=sandbox`
+  - Credenciales del panel → **Credenciales de prueba** (aunque el token sea `APP_USR-`)
+  - Checkout usa `sandbox_init_point`
+  - El comprador debe ser un **usuario de prueba comprador** del panel MP (no tu cuenta real de Mercado Pago)
+  - Ventana de incógnito recomendada si antes iniciaste sesión con MP real
+- **Producción (cobro real)**:
+  - `MERCADOPAGO_ENV=production`
+  - Credenciales de **producción** (`APP_USR-` de cuenta real)
+  - `init_point` de producción
+
+## Error «Una de las partes es de prueba»
+
+Significa que vendedor y comprador no están en el mismo modo. Con credenciales `TESTUSER…`:
+
+1. Deja `MERCADOPAGO_ENV=sandbox` en `.env`
+2. En [Cuentas de prueba](https://www.mercadopago.cl/developers/es/docs/checkout-pro/additional-content/test-users) crea o copia el **usuario Comprador**
+3. En el checkout de MP, **inicia sesión** con ese comprador (solo la tarjeta de prueba no basta si tu navegador tiene sesión MP real)
+4. Tarjeta aprobada Chile: `5031 7555 3456 7890` · CVV `123` · venc. `11/30`
+
+Los avisos CSP / `requestStorageAccessFor` en la consola vienen del checkout de Mercado Pago, no de reuso; se pueden ignorar.
 
 ## Tarjetas de prueba (Chile)
 
-Ver documentación oficial de MercadoPago para tarjetas y estados (aprobado, rechazado, pendiente).
+Ver [tarjetas de prueba](https://www.mercadopago.cl/developers/es/docs/checkout-pro/additional-content/test-cards) en la documentación oficial.
 
 ## Verificación en el servidor
 
