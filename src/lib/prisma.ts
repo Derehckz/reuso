@@ -129,18 +129,33 @@ function proxyModelDelegate(modelKey: string | symbol) {
   );
 }
 
+function bindClientMethod(client: PrismaClient, prop: string | symbol) {
+  const value = Reflect.get(client, prop);
+  if (typeof value === "function") {
+    return (value as (...args: unknown[]) => unknown).bind(client);
+  }
+  return value;
+}
+
 export const prisma: PrismaClient = new Proxy({} as PrismaClient, {
   get(_target, prop) {
-    if (typeof prop === "string" && !prop.startsWith("$") && prop !== "then") {
-      const value = Reflect.get(getPrismaClient(), prop);
+    if (prop === "then") return undefined;
+
+    const client = getPrismaClient();
+
+    // $transaction, $queryRaw, etc. — sin proxy/retry (Prisma valida los argumentos)
+    if (typeof prop === "string" && prop.startsWith("$")) {
+      return bindClientMethod(client, prop);
+    }
+
+    if (typeof prop === "string") {
+      const value = Reflect.get(client, prop);
       if (value && typeof value === "object") {
         return proxyModelDelegate(prop);
       }
     }
 
-    const client = getPrismaClient();
     const value = Reflect.get(client, prop);
-
     if (typeof value === "function") {
       return withRetry(
         (...args: unknown[]) =>
